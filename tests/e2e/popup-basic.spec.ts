@@ -1,4 +1,5 @@
 import { test, expect, chromium, BrowserContext } from '@playwright/test';
+import path from 'path';
 import { ExtensionUtils } from './extension-utils';
 
 test.describe('FlowCraft Popup - Basic Functionality', () => {
@@ -6,18 +7,20 @@ test.describe('FlowCraft Popup - Basic Functionality', () => {
   let extensionId: string;
 
   test.beforeAll(async () => {
+    // Unique user data dir for this test suite
+    const userDataDir = path.join(process.cwd(), '.test-user-data', 'popup');
+
     // Launch browser with extension
-    const browser = await chromium.launch({
+    context = await chromium.launchPersistentContext(userDataDir, {
       headless: false,
       args: [
-        '--disable-extensions-except=' + process.cwd(),
-        '--load-extension=' + process.cwd(),
+        '--disable-extensions-except=' + path.join(process.cwd(), 'dist'),
+        '--load-extension=' + path.join(process.cwd(), 'dist'),
         '--no-sandbox',
         '--disable-setuid-sandbox',
       ],
     });
 
-    context = await browser.newContext();
     extensionId = await ExtensionUtils.getExtensionId(context);
   });
 
@@ -62,7 +65,7 @@ test.describe('FlowCraft Popup - Basic Functionality', () => {
     const page = await ExtensionUtils.openPopup(context, extensionId);
 
     // Verify settings link exists
-    const settingsLink = page.locator('a:has-text("Settings")');
+    const settingsLink = page.locator('button:has-text("Open Settings")');
     await expect(settingsLink).toBeVisible();
 
     await page.close();

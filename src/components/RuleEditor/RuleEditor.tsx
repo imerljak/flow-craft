@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React from 'react';
+import { useForm, Controller, SubmitHandler } from 'react-hook-form';
 import { Rule, RuleType, UrlMatcherType, HeaderModification } from '@shared/types';
 import { generateId, isValidUrl, isValidRegex } from '@shared/utils';
 import { DEFAULT_RULE_PRIORITY } from '@shared/constants';
@@ -12,99 +13,63 @@ export interface RuleEditorProps {
   onCancel: () => void;
 }
 
-interface FormErrors {
-  name?: string;
-  pattern?: string;
-  redirectUrl?: string;
+interface RuleFormData {
+  name: string;
+  description: string;
+  pattern: string;
+  patternType: UrlMatcherType;
+  ruleType: RuleType;
+  priority: number | string;
+  redirectUrl: string;
+  headers: HeaderModification[];
 }
 
 /**
  * RuleEditor component for creating and editing rules
  */
 export const RuleEditor: React.FC<RuleEditorProps> = ({ rule, onSave, onCancel }) => {
-  // Form state
-  const [name, setName] = useState(rule?.name || '');
-  const [description, setDescription] = useState(rule?.description || '');
-  const [pattern, setPattern] = useState(rule?.matcher.pattern || '');
-  const [patternType, setPatternType] = useState<UrlMatcherType>(
-    rule?.matcher.type || 'exact'
-  );
-  const [ruleType, setRuleType] = useState<RuleType>(
-    rule?.action.type || RuleType.HEADER_MODIFICATION
-  );
-  const [priority, setPriority] = useState(rule?.priority || DEFAULT_RULE_PRIORITY);
-  const [redirectUrl, setRedirectUrl] = useState(
-    rule?.action.type === RuleType.URL_REDIRECT ? rule.action.redirectUrl : ''
-  );
-  const [headers, setHeaders] = useState<HeaderModification[]>(
-    rule?.action.type === RuleType.HEADER_MODIFICATION ? rule.action.headers : []
-  );
+  const {
+    register,
+    control,
+    handleSubmit,
+    watch,
+    formState: { errors },
+  } = useForm<RuleFormData>({
+    defaultValues: {
+      name: rule?.name || '',
+      description: rule?.description || '',
+      pattern: rule?.matcher.pattern || '',
+      patternType: rule?.matcher.type || 'exact',
+      ruleType: rule?.action.type || RuleType.HEADER_MODIFICATION,
+      priority: rule?.priority || DEFAULT_RULE_PRIORITY,
+      redirectUrl: rule?.action.type === RuleType.URL_REDIRECT ? rule.action.redirectUrl : '',
+      headers: rule?.action.type === RuleType.HEADER_MODIFICATION ? rule.action.headers : [],
+    },
+    mode: 'onSubmit',
+  });
 
-  const [errors, setErrors] = useState<FormErrors>({});
+  console.log('RuleEditor Render. Errors:', errors);
+  const values = watch();
+  console.log('RuleEditor Render. Values:', values);
 
-  /**
-   * Validate form fields
-   */
-  const validate = (): boolean => {
-    const newErrors: FormErrors = {};
+  const watchedPatternType = watch('patternType');
+  const watchedRuleType = watch('ruleType');
 
-    // Validate name
-    if (!name.trim()) {
-      newErrors.name = 'Rule name is required';
-    }
-
-    // Validate pattern
-    if (!pattern.trim()) {
-      newErrors.pattern = 'URL pattern is required';
-    } else if (patternType === 'exact' || patternType === 'wildcard') {
-      // For exact and wildcard, check if it's a valid URL or URL pattern
-      if (!pattern.includes('*') && !isValidUrl(pattern)) {
-        newErrors.pattern = 'Invalid URL format';
-      }
-    } else if (patternType === 'regex') {
-      // For regex, validate the regex pattern
-      if (!isValidRegex(pattern)) {
-        newErrors.pattern = 'Invalid regex pattern';
-      }
-    }
-
-    // Validate redirect URL for redirect rules
-    if (ruleType === RuleType.URL_REDIRECT) {
-      if (!redirectUrl.trim()) {
-        newErrors.redirectUrl = 'Redirect URL is required';
-      } else if (!isValidUrl(redirectUrl)) {
-        newErrors.redirectUrl = 'Invalid redirect URL format';
-      }
-    }
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
-
-  /**
-   * Handle form submission
-   */
-  const handleSubmit = (e: React.FormEvent): void => {
-    e.preventDefault();
-
-    if (!validate()) {
-      return;
-    }
-
+  const onSubmit: SubmitHandler<RuleFormData> = (data) => {
     // Build rule action based on type
     let action: Rule['action'];
 
-    switch (ruleType) {
+    switch (data.ruleType) {
       case RuleType.HEADER_MODIFICATION:
         action = {
           type: RuleType.HEADER_MODIFICATION,
-          headers,
+          headers: data.headers,
         };
         break;
       case RuleType.URL_REDIRECT:
         action = {
           type: RuleType.URL_REDIRECT,
-          redirectUrl,
+          redirectUrl: data.redirectUrl,
         };
         break;
       case RuleType.REQUEST_BLOCK:
@@ -142,13 +107,13 @@ export const RuleEditor: React.FC<RuleEditorProps> = ({ rule, onSave, onCancel }
 
     const newRule: Rule = {
       id: rule?.id || generateId(),
-      name: name.trim(),
-      description: description.trim() || undefined,
+      name: data.name.trim(),
+      description: data.description.trim() || undefined,
       enabled: rule?.enabled ?? true,
-      priority,
+      priority: Number(data.priority) || DEFAULT_RULE_PRIORITY,
       matcher: {
-        type: patternType,
-        pattern: pattern.trim(),
+        type: data.patternType,
+        pattern: data.pattern.trim(),
       },
       action,
       createdAt: rule?.createdAt || Date.now(),
@@ -158,44 +123,77 @@ export const RuleEditor: React.FC<RuleEditorProps> = ({ rule, onSave, onCancel }
     onSave(newRule);
   };
 
+  const onError = (errors: any) => {
+    console.log('Form errors:', errors);
+  };
+
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
+    <form
+      onSubmit={(e) => {
+        console.log('Form submit event fired');
+        handleSubmit(onSubmit, onError)(e);
+      }}
+      className="space-y-4"
+    >
       {/* Rule Name */}
-      <Input
-        label="Rule Name"
-        value={name}
-        onChange={(e) => setName(e.target.value)}
-        placeholder="e.g., Add CORS headers"
-        error={errors.name}
-        fullWidth
-        required
+      <Controller
+        name="name"
+        control={control}
+        rules={{ required: 'Rule name is required' }}
+        render={({ field }) => (
+          <Input
+            {...field}
+            label="Rule Name"
+            placeholder="e.g., Add CORS headers"
+            error={errors.name?.message}
+            fullWidth
+          />
+        )}
       />
 
       {/* Description */}
       <Input
         label="Description (optional)"
-        value={description}
-        onChange={(e) => setDescription(e.target.value)}
         placeholder="Describe what this rule does"
         fullWidth
+        {...register('description')}
       />
 
       {/* URL Pattern */}
-      <Input
-        label="URL Pattern"
-        value={pattern}
-        onChange={(e) => setPattern(e.target.value)}
-        placeholder="https://api.example.com/*"
-        error={errors.pattern}
-        helperText={
-          patternType === 'regex'
-            ? 'Enter a regular expression'
-            : patternType === 'wildcard'
-              ? 'Use * as wildcard'
-              : 'Enter exact URL'
-        }
-        fullWidth
-        required
+      <Controller
+        name="pattern"
+        control={control}
+        rules={{
+          required: 'URL pattern is required',
+          validate: (value) => {
+            if (watchedPatternType === 'exact' || watchedPatternType === 'wildcard') {
+              if (!value.includes('*') && !isValidUrl(value)) {
+                return 'Invalid URL format';
+              }
+            } else if (watchedPatternType === 'regex') {
+              if (!isValidRegex(value)) {
+                return 'Invalid regex pattern';
+              }
+            }
+            return true;
+          }
+        }}
+        render={({ field }) => (
+          <Input
+            {...field}
+            label="URL Pattern"
+            placeholder="https://api.example.com/*"
+            error={errors.pattern?.message}
+            helperText={
+              watchedPatternType === 'regex'
+                ? 'Enter a regular expression'
+                : watchedPatternType === 'wildcard'
+                  ? 'Use * as wildcard'
+                  : 'Enter exact URL'
+            }
+            fullWidth
+          />
+        )}
       />
 
       {/* Pattern Type */}
@@ -208,9 +206,8 @@ export const RuleEditor: React.FC<RuleEditorProps> = ({ rule, onSave, onCancel }
         </label>
         <select
           id="pattern-type"
-          value={patternType}
-          onChange={(e) => setPatternType(e.target.value as UrlMatcherType)}
           className="block px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-md text-sm bg-white dark:bg-neutral-800 dark:text-white transition-colors focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+          {...register('patternType')}
         >
           <option value="exact">Exact Match</option>
           <option value="wildcard">Wildcard (*)</option>
@@ -228,9 +225,8 @@ export const RuleEditor: React.FC<RuleEditorProps> = ({ rule, onSave, onCancel }
         </label>
         <select
           id="rule-type"
-          value={ruleType}
-          onChange={(e) => setRuleType(e.target.value as RuleType)}
           className="block px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-md text-sm bg-white dark:bg-neutral-800 dark:text-white transition-colors focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+          {...register('ruleType')}
         >
           <option value={RuleType.HEADER_MODIFICATION}>Header Modification</option>
           <option value={RuleType.URL_REDIRECT}>URL Redirection</option>
@@ -245,32 +241,48 @@ export const RuleEditor: React.FC<RuleEditorProps> = ({ rule, onSave, onCancel }
       <Input
         label="Priority"
         type="number"
-        value={priority}
-        onChange={(e) => setPriority(parseInt(e.target.value) || DEFAULT_RULE_PRIORITY)}
         helperText="Lower number = higher priority (1 is highest)"
         min={1}
         max={1000}
+        {...register('priority', { valueAsNumber: true })}
       />
 
       {/* Conditional Fields Based on Rule Type */}
-      {ruleType === RuleType.URL_REDIRECT && (
-        <Input
-          label="Redirect URL"
-          value={redirectUrl}
-          onChange={(e) => setRedirectUrl(e.target.value)}
-          placeholder="https://new.example.com"
-          error={errors.redirectUrl}
-          fullWidth
-          required
+      {watchedRuleType === RuleType.URL_REDIRECT && (
+        <Controller
+          name="redirectUrl"
+          control={control}
+          rules={{
+            required: 'Redirect URL is required',
+            validate: (value) => isValidUrl(value) || 'Invalid redirect URL format'
+          }}
+          render={({ field }) => (
+            <Input
+              {...field}
+              label="Redirect URL"
+              placeholder="https://new.example.com"
+              error={errors.redirectUrl?.message}
+              fullWidth
+            />
+          )}
         />
       )}
 
-      {ruleType === RuleType.HEADER_MODIFICATION && (
+      {watchedRuleType === RuleType.HEADER_MODIFICATION && (
         <div>
           <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
             Headers
           </label>
-          <HeaderEditor headers={headers} onChange={setHeaders} />
+          <Controller
+            control={control}
+            name="headers"
+            render={({ field }) => (
+              <HeaderEditor
+                headers={field.value}
+                onChange={field.onChange}
+              />
+            )}
+          />
         </div>
       )}
 

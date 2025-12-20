@@ -1,17 +1,21 @@
 import { defineConfig, devices } from '@playwright/test';
 import path from 'path';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 export default defineConfig({
   testDir: './tests/e2e',
-  fullyParallel: false, // Chrome extension tests must run sequentially
+  fullyParallel: false, // Chrome extension tests must run sequentially due to profile locks
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,
-  workers: 1, // Chrome extension tests need single worker
-  reporter: 'html',
-  timeout: 30000,
+  workers: 1, // Chrome extension tests need single worker to avoid profile conflicts
+  reporter: process.env.CI ? 'dot' : 'list',
+  timeout: 15000,
   use: {
     trace: 'on-first-retry',
-    headless: false, // Chrome extensions require non-headless mode
+    headless: false, // Chrome extensions work better in headed mode for debugging
   },
   projects: [
     {
@@ -21,8 +25,8 @@ export default defineConfig({
         // Chrome extension specific configuration
         launchOptions: {
           args: [
-            `--disable-extensions-except=${path.resolve(__dirname)}`,
-            `--load-extension=${path.resolve(__dirname)}`,
+            `--disable-extensions-except=${path.join(__dirname, 'dist')}`,
+            `--load-extension=${path.join(__dirname, 'dist')}`,
             '--no-sandbox',
             '--disable-setuid-sandbox',
           ],

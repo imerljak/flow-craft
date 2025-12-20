@@ -1,4 +1,5 @@
 import { Page, BrowserContext } from '@playwright/test';
+import { StorageSchema } from '../../src/shared/types';
 
 /**
  * Extension testing utilities for Playwright E2E tests
@@ -8,39 +9,15 @@ export class ExtensionUtils {
    * Gets the extension ID from the loaded extensions
    */
   static async getExtensionId(context: BrowserContext): Promise<string> {
-    // Navigate to chrome://extensions to find the extension ID
-    const page = await context.newPage();
-    await page.goto('chrome://extensions');
+    let [background] = context.serviceWorkers();
+    if (!background) {
+      background = await context.waitForEvent('serviceworker');
+    }
 
-    // Enable developer mode if not already enabled
-    await page.evaluate(() => {
-      const toggle = document.querySelector('extensions-manager')
-        ?.shadowRoot?.querySelector('extensions-toolbar')
-        ?.shadowRoot?.querySelector('#devMode');
-      if (toggle && !(toggle as HTMLInputElement).checked) {
-        (toggle as HTMLElement).click();
-      }
-    });
-
-    // Get the extension ID
-    const extensionId = await page.evaluate(() => {
-      const extensionsManager = document.querySelector('extensions-manager');
-      const itemsList = extensionsManager?.shadowRoot?.querySelector('extensions-item-list');
-      const items = itemsList?.shadowRoot?.querySelectorAll('extensions-item');
-
-      for (const item of Array.from(items || [])) {
-        const name = item.shadowRoot?.querySelector('#name')?.textContent;
-        if (name?.includes('FlowCraft')) {
-          return item.getAttribute('id');
-        }
-      }
-      return null;
-    });
-
-    await page.close();
-
+    console.log("!!! SERVICE WORKER URL: ", background.url());
+    const extensionId = background.url().split('/')[2];
     if (!extensionId) {
-      throw new Error('FlowCraft extension not found. Make sure the extension is loaded.');
+      throw new Error('Could not find extension ID from service worker URL');
     }
 
     return extensionId;
@@ -52,6 +29,11 @@ export class ExtensionUtils {
   static async openPopup(context: BrowserContext, extensionId: string): Promise<Page> {
     const popupUrl = `chrome-extension://${extensionId}/index.html`;
     const page = await context.newPage();
+
+    // Debug logging
+    page.on('console', msg => console.log(`[Popup Console]: ${msg.text()}`));
+    page.on('pageerror', err => console.error(`[Popup Error]: ${err.message}`));
+
     await page.goto(popupUrl);
     await page.waitForLoadState('domcontentloaded');
     return page;
@@ -83,7 +65,7 @@ export class ExtensionUtils {
   static async getRules(page: Page): Promise<any[]> {
     return page.evaluate(() => {
       return new Promise((resolve) => {
-        chrome.storage.local.get('rules', (result) => {
+        chrome.storage.local.get<Partial<StorageSchema>>(['rules'], (result) => {
           resolve(result.rules || []);
         });
       });

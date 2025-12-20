@@ -186,6 +186,7 @@ export interface StorageSchema {
  * Extension settings
  */
 export interface Settings {
+  enabled: boolean; // Global extension on/off toggle
   theme: 'light' | 'dark' | 'system';
   enableRequestHistory: boolean;
   maxHistorySize: number;
@@ -197,6 +198,7 @@ export interface Settings {
  * Default settings
  */
 export const DEFAULT_SETTINGS: Settings = {
+  enabled: true, // Extension enabled by default
   theme: 'system',
   enableRequestHistory: false,
   maxHistorySize: 100,
