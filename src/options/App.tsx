@@ -101,7 +101,7 @@ const App: React.FC = () => {
         {/* Logo/Header */}
         <div className="p-6 border-b border-neutral-200 dark:border-neutral-700">
           <div className="flex items-center gap-3">
-            <img src="/icons/icon128.png" alt="FlowCraft" className="w-24 h-24" />
+            <img src="/icons/icon64.png" alt="FlowCraft" className="w-10 h-10" />
             <div>
               <h1 className="text-xl font-bold text-neutral-900 dark:text-white">FlowCraft</h1>
               <p className="text-xs text-neutral-600 dark:text-neutral-400">HTTP Interceptor</p>
