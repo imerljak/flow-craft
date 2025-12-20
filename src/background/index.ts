@@ -6,15 +6,22 @@
 import { Storage } from '@storage/index';
 import { RequestInterceptor } from './requestInterceptor';
 import browser from 'webextension-polyfill';
+import { Rule } from '@shared/types';
+
+/**
+ * Message types for runtime communication
+ */
+interface BackgroundMessage {
+  type: 'GET_RULES' | 'SAVE_RULE' | 'DELETE_RULE' | 'SYNC_RULES';
+  data?: Rule | string;
+}
 
 /**
  * Initialize extension and sync rules
  */
 async function initializeExtension(): Promise<void> {
-  console.log('FlowCraft initializing...');
   await Storage.initialize();
   await syncRules();
-  console.log('FlowCraft initialized');
 }
 
 /**
@@ -24,58 +31,62 @@ async function syncRules(): Promise<void> {
   try {
     const rules = await Storage.getRules();
     await RequestInterceptor.updateDynamicRules(rules);
-    console.log(`Synced ${rules.length} rules to declarativeNetRequest`);
   } catch (error) {
     console.error('Failed to sync rules:', error);
   }
 }
 
 // Initialize on install or update
-browser.runtime.onInstalled.addListener(async () => {
+browser.runtime.onInstalled.addListener(async (): Promise<void> => {
   await initializeExtension();
 });
 
 // Initialize on startup
-browser.runtime.onStartup.addListener(async () => {
+browser.runtime.onStartup.addListener(async (): Promise<void> => {
   await syncRules();
 });
 
 // Listen for storage changes and sync rules
-browser.storage.onChanged.addListener((changes, areaName) => {
+browser.storage.onChanged.addListener((changes, areaName): void => {
   if (areaName === 'local' && changes.rules) {
-    console.log('Rules changed, syncing...');
-    syncRules();
+    void syncRules();
   }
 });
 
 
 // Handle messages from popup/options pages
-browser.runtime.onMessage.addListener((message: any, _sender, sendResponse) => {
-  console.log('Received message:', message);
+browser.runtime.onMessage.addListener((message: unknown, _sender, sendResponse): true => {
+  // Type guard for BackgroundMessage
+  const msg = message as BackgroundMessage;
 
   // Handle async operations
-  (async () => {
+  void (async (): Promise<void> => {
     try {
-      switch (message.type) {
-        case 'GET_RULES':
+      switch (msg.type) {
+        case 'GET_RULES': {
           const rules = await Storage.getRules();
           sendResponse({ success: true, data: rules });
           break;
-        case 'SAVE_RULE':
-          await Storage.saveRule(message.data);
+        }
+        case 'SAVE_RULE': {
+          await Storage.saveRule(msg.data as Rule);
           // Rules will be synced automatically via storage change listener
           sendResponse({ success: true });
           break;
-        case 'DELETE_RULE':
-          await Storage.deleteRule(message.data);
+        }
+        case 'DELETE_RULE': {
+          await Storage.deleteRule(msg.data as string);
           sendResponse({ success: true });
           break;
-        case 'SYNC_RULES':
+        }
+        case 'SYNC_RULES': {
           await syncRules();
           sendResponse({ success: true });
           break;
-        default:
+        }
+        default: {
           sendResponse({ success: false, error: 'Unknown message type' });
+        }
       }
     } catch (error) {
       sendResponse({ success: false, error: String(error) });
@@ -85,5 +96,3 @@ browser.runtime.onMessage.addListener((message: any, _sender, sendResponse) => {
   // Return true to indicate we'll send a response asynchronously
   return true;
 });
-
-console.log('FlowCraft background service worker loaded');

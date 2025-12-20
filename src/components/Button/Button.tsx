@@ -1,6 +1,8 @@
 import React from 'react';
 import clsx from 'clsx';
 
+import { Button as HButton } from '@headlessui/react';
+
 export type ButtonVariant = 'primary' | 'secondary' | 'ghost' | 'danger';
 export type ButtonSize = 'sm' | 'md' | 'lg';
 
@@ -46,7 +48,7 @@ export const Button: React.FC<ButtonProps> = ({
   const widthStyles = fullWidth ? 'w-full' : '';
 
   return (
-    <button
+    <HButton
       className={clsx(
         baseStyles,
         variantStyles[variant],
@@ -58,6 +60,6 @@ export const Button: React.FC<ButtonProps> = ({
       {...props}
     >
       {children}
-    </button>
+    </HButton>
   );
 };

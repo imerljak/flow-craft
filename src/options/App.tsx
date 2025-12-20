@@ -162,7 +162,7 @@ const App: React.FC = () => {
                     {activeRulesCount} of {rules.length} rules active
                   </p>
                 </div>
-                <Button variant="primary" onClick={handleCreateRule}>
+                <Button variant="primary" onClick={handleCreateRule} data-testid="new-rule-btn">
                   + New Rule
                 </Button>
               </div>
@@ -278,6 +278,7 @@ const App: React.FC = () => {
                           <td className="px-6 py-4 text-right">
                             <div className="flex items-center justify-end gap-2">
                               <button
+                                data-testid={`edit-rule-${rule.id}`}
                                 onClick={() => handleEditRule(rule)}
                                 className="text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300 text-sm font-medium"
                                 aria-label={`Edit ${rule.name}`}
@@ -285,6 +286,7 @@ const App: React.FC = () => {
                                 Edit
                               </button>
                               <button
+                                data-testid={`delete-rule-${rule.id}`}
                                 onClick={() => confirmDeleteRule(rule)}
                                 className="text-error-600 dark:text-error-400 hover:text-error-700 dark:hover:text-error-300 text-sm font-medium"
                                 aria-label={`Delete ${rule.name}`}
@@ -324,6 +326,7 @@ const App: React.FC = () => {
         onClose={handleCancelEdit}
         title={editingRule ? 'Edit Rule' : 'Create New Rule'}
         size="lg"
+        testId="rule-editor-modal"
       >
         <RuleEditor rule={editingRule} onSave={handleSaveRule} onCancel={handleCancelEdit} />
       </Modal>
@@ -334,6 +337,7 @@ const App: React.FC = () => {
         onClose={handleCancelDelete}
         title="Delete Rule"
         size="sm"
+        testId="delete-confirm-modal"
       >
         <div className="space-y-4">
           <p className="text-neutral-700 dark:text-neutral-300">
@@ -341,10 +345,10 @@ const App: React.FC = () => {
             cannot be undone.
           </p>
           <div className="flex justify-end gap-2">
-            <Button variant="ghost" onClick={handleCancelDelete}>
+            <Button variant="ghost" onClick={handleCancelDelete} data-testid="delete-cancel-btn">
               Cancel
             </Button>
-            <Button variant="danger" onClick={handleDeleteRule}>
+            <Button variant="danger" onClick={handleDeleteRule} data-testid="delete-confirm-btn">
               Delete
             </Button>
           </div>
