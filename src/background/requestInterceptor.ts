@@ -3,11 +3,18 @@
  */
 
 import { Rule, RuleType, HeaderOperation, ResourceType } from '@shared/types';
+import Browser, { DeclarativeNetRequest } from 'webextension-polyfill';
 
 /**
- * Chrome declarativeNetRequest rule type
+ * Browser declarativeNetRequest rule type
  */
-type ChromeRule = chrome.declarativeNetRequest.Rule;
+type BrowserRule = DeclarativeNetRequest.Rule;
+
+
+/**
+ * Fill missing polyfill TS types
+ */
+type ModifyHeaderInfo = NonNullable<DeclarativeNetRequest.RuleActionType["requestHeaders"]>[number]
 
 /**
  * Default resource types to intercept
@@ -16,7 +23,7 @@ const DEFAULT_RESOURCE_TYPES = [
   'main_frame',
   'sub_frame',
   'xmlhttprequest',
-] as chrome.declarativeNetRequest.ResourceType[];
+] as DeclarativeNetRequest.ResourceType[];
 
 /**
  * RequestInterceptor handles conversion of FlowCraft rules to Chrome's format
@@ -24,9 +31,9 @@ const DEFAULT_RESOURCE_TYPES = [
  */
 export class RequestInterceptor {
   /**
-   * Convert a FlowCraft rule to Chrome declarativeNetRequest format
+   * Convert a FlowCraft rule to Browser declarativeNetRequest format
    */
-  static convertToDeclarativeNetRequestRule(rule: Rule, numericId: number): ChromeRule | null {
+  static convertToDeclarativeNetRequestRule(rule: Rule, numericId: number): BrowserRule | null {
     const condition = this.buildCondition(rule);
     const action = this.buildAction(rule);
 
@@ -47,8 +54,8 @@ export class RequestInterceptor {
    */
   private static buildCondition(
     rule: Rule
-  ): chrome.declarativeNetRequest.RuleCondition {
-    const condition: chrome.declarativeNetRequest.RuleCondition = {
+  ): DeclarativeNetRequest.RuleConditionType {
+    const condition: DeclarativeNetRequest.RuleConditionType = {
       resourceTypes: this.getResourceTypes(rule),
     };
 
@@ -68,14 +75,14 @@ export class RequestInterceptor {
    */
   private static buildAction(
     rule: Rule
-  ): chrome.declarativeNetRequest.RuleAction | null {
+  ): DeclarativeNetRequest.RuleActionType | null {
     switch (rule.action.type) {
       case RuleType.HEADER_MODIFICATION:
         return this.buildHeaderModificationAction(rule);
 
       case RuleType.URL_REDIRECT:
         return {
-          type: 'redirect' as chrome.declarativeNetRequest.RuleActionType,
+          type: 'redirect' as DeclarativeNetRequest.RuleActionTypeEnum,
           redirect: {
             url: rule.action.redirectUrl,
           },
@@ -83,7 +90,7 @@ export class RequestInterceptor {
 
       case RuleType.REQUEST_BLOCK:
         return {
-          type: 'block' as chrome.declarativeNetRequest.RuleActionType,
+          type: 'block' as DeclarativeNetRequest.RuleActionTypeEnum,
         };
 
       // Mock response and script injection are not supported by declarativeNetRequest
@@ -103,17 +110,17 @@ export class RequestInterceptor {
    */
   private static buildHeaderModificationAction(
     rule: Rule
-  ): chrome.declarativeNetRequest.RuleAction {
+  ): Browser.DeclarativeNetRequest.RuleActionType {
     if (rule.action.type !== RuleType.HEADER_MODIFICATION) {
       throw new Error('Invalid rule type for header modification');
     }
 
-    const requestHeaders: chrome.declarativeNetRequest.ModifyHeaderInfo[] = [];
+    const requestHeaders: ModifyHeaderInfo[] = [];
 
     for (const header of rule.action.headers) {
       const chromeOperation = this.convertHeaderOperation(header.operation);
 
-      const headerInfo: chrome.declarativeNetRequest.ModifyHeaderInfo = {
+      const headerInfo: ModifyHeaderInfo = {
         operation: chromeOperation,
         header: header.name,
       };
@@ -131,25 +138,25 @@ export class RequestInterceptor {
     }
 
     return {
-      type: 'modifyHeaders' as chrome.declarativeNetRequest.RuleActionType,
+      type: 'modifyHeaders' as DeclarativeNetRequest.RuleActionTypeEnum,
       requestHeaders,
     };
   }
 
   /**
-   * Convert FlowCraft header operation to Chrome operation
+   * Convert FlowCraft header operation to Browser operation
    */
   private static convertHeaderOperation(
     operation: HeaderOperation
-  ): chrome.declarativeNetRequest.HeaderOperation {
+  ): ModifyHeaderInfo["operation"] {
     switch (operation) {
       case HeaderOperation.ADD:
       case HeaderOperation.MODIFY:
-        return 'set' as chrome.declarativeNetRequest.HeaderOperation;
+        return 'set';
       case HeaderOperation.REMOVE:
-        return 'remove' as chrome.declarativeNetRequest.HeaderOperation;
+        return 'remove';
       default:
-        return 'set' as chrome.declarativeNetRequest.HeaderOperation;
+        return 'set';
     }
   }
 
@@ -158,7 +165,7 @@ export class RequestInterceptor {
    */
   private static getResourceTypes(
     rule: Rule
-  ): chrome.declarativeNetRequest.ResourceType[] {
+  ): DeclarativeNetRequest.ResourceType[] {
     if (rule.matcher.resourceTypes && rule.matcher.resourceTypes.length > 0) {
       return rule.matcher.resourceTypes.map((type) =>
         this.convertResourceType(type)
@@ -173,9 +180,9 @@ export class RequestInterceptor {
    */
   private static convertResourceType(
     type: ResourceType
-  ): chrome.declarativeNetRequest.ResourceType {
+  ): DeclarativeNetRequest.ResourceType {
     // Most types are the same, just lowercase
-    return type.toLowerCase() as chrome.declarativeNetRequest.ResourceType;
+    return type.toLowerCase() as DeclarativeNetRequest.ResourceType;
   }
 
   /**
@@ -184,12 +191,12 @@ export class RequestInterceptor {
   static async updateDynamicRules(rules: Rule[]): Promise<void> {
     try {
       // Get existing dynamic rules
-      const existingRules = await chrome.declarativeNetRequest.getDynamicRules();
+      const existingRules = await Browser.declarativeNetRequest.getDynamicRules();
       const existingRuleIds = existingRules.map((rule) => rule.id);
 
       // Convert enabled FlowCraft rules to Chrome format
       const enabledRules = rules.filter((rule) => rule.enabled);
-      const chromeRules: ChromeRule[] = [];
+      const chromeRules: BrowserRule[] = [];
 
       for (let i = 0; i < enabledRules.length; i++) {
         const rule = enabledRules[i];
@@ -202,7 +209,7 @@ export class RequestInterceptor {
       }
 
       // Update dynamic rules (remove old, add new)
-      await chrome.declarativeNetRequest.updateDynamicRules({
+      await Browser.declarativeNetRequest.updateDynamicRules({
         removeRuleIds: existingRuleIds,
         addRules: chromeRules,
       });
@@ -216,10 +223,10 @@ export class RequestInterceptor {
    * Clear all dynamic rules
    */
   static async clearDynamicRules(): Promise<void> {
-    const existingRules = await chrome.declarativeNetRequest.getDynamicRules();
+    const existingRules = await Browser.declarativeNetRequest.getDynamicRules();
     const existingRuleIds = existingRules.map((rule) => rule.id);
 
-    await chrome.declarativeNetRequest.updateDynamicRules({
+    await Browser.declarativeNetRequest.updateDynamicRules({
       removeRuleIds: existingRuleIds,
       addRules: [],
     });

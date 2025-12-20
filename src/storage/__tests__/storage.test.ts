@@ -2,40 +2,42 @@
  * Storage layer tests - TDD approach
  */
 
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { Storage } from '../index';
 import { Rule, RuleGroup, Settings, DEFAULT_SETTINGS, RuleType, HttpMethod } from '@shared/types';
+import Browser from 'webextension-polyfill';
 
 describe('Storage', () => {
   beforeEach(() => {
-    jest.clearAllMocks();
-    // Clear chrome.runtime.lastError
-    delete chrome.runtime.lastError;
-    // Reset chrome.storage mock
-    (chrome.storage.local.get as jest.Mock).mockImplementation((_keys, callback) => {
+    // Clear Browser.runtime.lastError
+    delete Browser.runtime.lastError;
+
+    // Reset Browser.storage mocks to default behavior
+    (Browser.storage.local.get as ReturnType<typeof vi.fn>).mockReset().mockImplementation((_keys, callback) => {
       callback?.({});
       return Promise.resolve({});
     });
-    (chrome.storage.local.set as jest.Mock).mockImplementation((_items, callback) => {
+    (Browser.storage.local.set as ReturnType<typeof vi.fn>).mockReset().mockImplementation((_items, callback) => {
       callback?.();
       return Promise.resolve();
     });
   });
 
   afterEach(() => {
-    // Ensure chrome.runtime.lastError is cleaned up
-    delete chrome.runtime.lastError;
+    // Ensure Browser.runtime.lastError is cleaned up
+    delete Browser.runtime.lastError;
   });
 
   describe('initialize', () => {
     it('should initialize with default settings if no data exists', async () => {
-      (chrome.storage.local.get as jest.Mock).mockImplementation((_keys, callback) => {
+      (Browser.storage.local.get as ReturnType<typeof vi.fn>).mockImplementation((_keys, callback) => {
         callback?.({});
         return Promise.resolve({});
       });
 
       await Storage.initialize();
 
-      expect(chrome.storage.local.set).toHaveBeenCalledWith(
+      expect(Browser.storage.local.set).toHaveBeenCalledWith(
         expect.objectContaining({
           settings: DEFAULT_SETTINGS,
           rules: [],
@@ -52,20 +54,20 @@ describe('Storage', () => {
         groups: [],
       };
 
-      (chrome.storage.local.get as jest.Mock).mockImplementation((_keys, callback) => {
+      (Browser.storage.local.get as ReturnType<typeof vi.fn>).mockImplementation((_keys, callback) => {
         callback?.(existingData);
         return Promise.resolve(existingData);
       });
 
       await Storage.initialize();
 
-      expect(chrome.storage.local.set).not.toHaveBeenCalled();
+      expect(Browser.storage.local.set).not.toHaveBeenCalled();
     });
   });
 
   describe('getRules', () => {
     it('should return empty array if no rules exist', async () => {
-      (chrome.storage.local.get as jest.Mock).mockImplementation((_keys, callback) => {
+      (Browser.storage.local.get as ReturnType<typeof vi.fn>).mockImplementation((_keys, callback) => {
         callback?.({ rules: [] });
         return Promise.resolve({ rules: [] });
       });
@@ -96,7 +98,7 @@ describe('Storage', () => {
         },
       ];
 
-      (chrome.storage.local.get as jest.Mock).mockImplementation((_keys, callback) => {
+      (Browser.storage.local.get as ReturnType<typeof vi.fn>).mockImplementation((_keys, callback) => {
         callback?.({ rules: mockRules });
         return Promise.resolve({ rules: mockRules });
       });
@@ -130,7 +132,7 @@ describe('Storage', () => {
         },
       ];
 
-      (chrome.storage.local.get as jest.Mock).mockImplementation((_keys, callback) => {
+      (Browser.storage.local.get as ReturnType<typeof vi.fn>).mockImplementation((_keys, callback) => {
         callback?.({ rules: mockRules });
         return Promise.resolve({ rules: mockRules });
       });
@@ -156,14 +158,14 @@ describe('Storage', () => {
         updatedAt: Date.now(),
       };
 
-      (chrome.storage.local.get as jest.Mock).mockImplementation((_keys, callback) => {
+      (Browser.storage.local.get as ReturnType<typeof vi.fn>).mockImplementation((_keys, callback) => {
         callback?.({ rules: existingRules });
         return Promise.resolve({ rules: existingRules });
       });
 
       await Storage.saveRule(newRule);
 
-      expect(chrome.storage.local.set).toHaveBeenCalledWith(
+      expect(Browser.storage.local.set).toHaveBeenCalledWith(
         { rules: [newRule] },
         expect.any(Function)
       );
@@ -187,14 +189,14 @@ describe('Storage', () => {
         updatedAt: Date.now(),
       };
 
-      (chrome.storage.local.get as jest.Mock).mockImplementation((_keys, callback) => {
+      (Browser.storage.local.get as ReturnType<typeof vi.fn>).mockImplementation((_keys, callback) => {
         callback?.({ rules: [existingRule] });
         return Promise.resolve({ rules: [existingRule] });
       });
 
       await Storage.saveRule(updatedRule);
 
-      expect(chrome.storage.local.set).toHaveBeenCalledWith(
+      expect(Browser.storage.local.set).toHaveBeenCalledWith(
         { rules: [updatedRule] },
         expect.any(Function)
       );
@@ -226,14 +228,14 @@ describe('Storage', () => {
         },
       ];
 
-      (chrome.storage.local.get as jest.Mock).mockImplementation((_keys, callback) => {
+      (Browser.storage.local.get as ReturnType<typeof vi.fn>).mockImplementation((_keys, callback) => {
         callback?.({ rules });
         return Promise.resolve({ rules });
       });
 
       await Storage.deleteRule('1');
 
-      expect(chrome.storage.local.set).toHaveBeenCalledWith(
+      expect(Browser.storage.local.set).toHaveBeenCalledWith(
         { rules: [rules[1]] },
         expect.any(Function)
       );
@@ -242,20 +244,20 @@ describe('Storage', () => {
     it('should do nothing if rule does not exist', async () => {
       const rules: Rule[] = [];
 
-      (chrome.storage.local.get as jest.Mock).mockImplementation((_keys, callback) => {
+      (Browser.storage.local.get as ReturnType<typeof vi.fn>).mockImplementation((_keys, callback) => {
         callback?.({ rules });
         return Promise.resolve({ rules });
       });
 
       await Storage.deleteRule('non-existent');
 
-      expect(chrome.storage.local.set).toHaveBeenCalledWith({ rules: [] }, expect.any(Function));
+      expect(Browser.storage.local.set).toHaveBeenCalledWith({ rules: [] }, expect.any(Function));
     });
   });
 
   describe('getSettings', () => {
     it('should return default settings if none exist', async () => {
-      (chrome.storage.local.get as jest.Mock).mockImplementation((_keys, callback) => {
+      (Browser.storage.local.get as ReturnType<typeof vi.fn>).mockImplementation((_keys, callback) => {
         callback?.({});
         return Promise.resolve({});
       });
@@ -271,7 +273,7 @@ describe('Storage', () => {
         theme: 'dark',
       };
 
-      (chrome.storage.local.get as jest.Mock).mockImplementation((_keys, callback) => {
+      (Browser.storage.local.get as ReturnType<typeof vi.fn>).mockImplementation((_keys, callback) => {
         callback?.({ settings: customSettings });
         return Promise.resolve({ settings: customSettings });
       });
@@ -291,7 +293,7 @@ describe('Storage', () => {
 
       await Storage.saveSettings(newSettings);
 
-      expect(chrome.storage.local.set).toHaveBeenCalledWith(
+      expect(Browser.storage.local.set).toHaveBeenCalledWith(
         { settings: newSettings },
         expect.any(Function)
       );
@@ -300,7 +302,7 @@ describe('Storage', () => {
 
   describe('getGroups', () => {
     it('should return empty array if no groups exist', async () => {
-      (chrome.storage.local.get as jest.Mock).mockImplementation((_keys, callback) => {
+      (Browser.storage.local.get as ReturnType<typeof vi.fn>).mockImplementation((_keys, callback) => {
         callback?.({ groups: [] });
         return Promise.resolve({ groups: [] });
       });
@@ -321,7 +323,7 @@ describe('Storage', () => {
         },
       ];
 
-      (chrome.storage.local.get as jest.Mock).mockImplementation((_keys, callback) => {
+      (Browser.storage.local.get as ReturnType<typeof vi.fn>).mockImplementation((_keys, callback) => {
         callback?.({ groups: mockGroups });
         return Promise.resolve({ groups: mockGroups });
       });
@@ -340,14 +342,14 @@ describe('Storage', () => {
         createdAt: Date.now(),
       };
 
-      (chrome.storage.local.get as jest.Mock).mockImplementation((_keys, callback) => {
+      (Browser.storage.local.get as ReturnType<typeof vi.fn>).mockImplementation((_keys, callback) => {
         callback?.({ groups: [] });
         return Promise.resolve({ groups: [] });
       });
 
       await Storage.saveGroup(newGroup);
 
-      expect(chrome.storage.local.set).toHaveBeenCalledWith(
+      expect(Browser.storage.local.set).toHaveBeenCalledWith(
         { groups: [newGroup] },
         expect.any(Function)
       );
@@ -361,14 +363,14 @@ describe('Storage', () => {
         { id: '2', name: 'Group 2', createdAt: Date.now() },
       ];
 
-      (chrome.storage.local.get as jest.Mock).mockImplementation((_keys, callback) => {
+      (Browser.storage.local.get as ReturnType<typeof vi.fn>).mockImplementation((_keys, callback) => {
         callback?.({ groups });
         return Promise.resolve({ groups });
       });
 
       await Storage.deleteGroup('1');
 
-      expect(chrome.storage.local.set).toHaveBeenCalledWith(
+      expect(Browser.storage.local.set).toHaveBeenCalledWith(
         { groups: [groups[1]] },
         expect.any(Function)
       );
@@ -377,54 +379,48 @@ describe('Storage', () => {
 
   describe('Error Handling', () => {
     describe('initialize', () => {
-      it('should reject if chrome.storage.local.get fails', async () => {
+      it('should reject if Browser.storage.local.get fails', async () => {
         const error = new Error('Storage get failed');
-        (chrome.storage.local.get as jest.Mock).mockImplementation((_keys, callback) => {
-          chrome.runtime.lastError = error;
+        (Browser.storage.local.get as ReturnType<typeof vi.fn>).mockImplementation((_keys, callback) => {
           callback?.({});
           return Promise.resolve({});
         });
 
         await expect(Storage.initialize()).rejects.toEqual(error);
 
-        delete chrome.runtime.lastError;
       });
 
-      it('should reject if chrome.storage.local.set fails during initialization', async () => {
+      it('should reject if Browser.storage.local.set fails during initialization', async () => {
         const error = new Error('Storage set failed');
-        (chrome.storage.local.get as jest.Mock).mockImplementation((_keys, callback) => {
+        (Browser.storage.local.get as ReturnType<typeof vi.fn>).mockImplementation((_keys, callback) => {
           callback?.({});
           return Promise.resolve({});
         });
-        (chrome.storage.local.set as jest.Mock).mockImplementation((_items, callback) => {
-          chrome.runtime.lastError = error;
+        (Browser.storage.local.set as ReturnType<typeof vi.fn>).mockImplementation((_items, callback) => {
           callback?.();
           return Promise.resolve();
         });
 
         await expect(Storage.initialize()).rejects.toEqual(error);
 
-        delete chrome.runtime.lastError;
       });
     });
 
     describe('getRules', () => {
-      it('should reject if chrome.storage.local.get fails', async () => {
+      it('should reject if Browser.storage.local.get fails', async () => {
         const error = new Error('Storage get failed');
-        (chrome.storage.local.get as jest.Mock).mockImplementation((_keys, callback) => {
-          chrome.runtime.lastError = error;
+        (Browser.storage.local.get as ReturnType<typeof vi.fn>).mockImplementation((_keys, callback) => {
           callback?.({});
           return Promise.resolve({});
         });
 
         await expect(Storage.getRules()).rejects.toEqual(error);
 
-        delete chrome.runtime.lastError;
       });
     });
 
     describe('saveRule', () => {
-      it('should reject if chrome.storage.local.get fails', async () => {
+      it('should reject if Browser.storage.local.get fails', async () => {
         const error = new Error('Storage get failed');
         const rule: Rule = {
           id: '1',
@@ -437,18 +433,16 @@ describe('Storage', () => {
           updatedAt: Date.now(),
         };
 
-        (chrome.storage.local.get as jest.Mock).mockImplementation((_keys, callback) => {
-          chrome.runtime.lastError = error;
+        (Browser.storage.local.get as ReturnType<typeof vi.fn>).mockImplementation((_keys, callback) => {
           callback?.({});
           return Promise.resolve({});
         });
 
         await expect(Storage.saveRule(rule)).rejects.toEqual(error);
 
-        delete chrome.runtime.lastError;
       });
 
-      it('should reject if chrome.storage.local.set fails', async () => {
+      it('should reject if Browser.storage.local.set fails', async () => {
         const error = new Error('Storage set failed');
         const rule: Rule = {
           id: '1',
@@ -461,37 +455,33 @@ describe('Storage', () => {
           updatedAt: Date.now(),
         };
 
-        (chrome.storage.local.get as jest.Mock).mockImplementation((_keys, callback) => {
+        (Browser.storage.local.get as ReturnType<typeof vi.fn>).mockImplementation((_keys, callback) => {
           callback?.({ rules: [] });
           return Promise.resolve({ rules: [] });
         });
-        (chrome.storage.local.set as jest.Mock).mockImplementation((_items, callback) => {
-          chrome.runtime.lastError = error;
+        (Browser.storage.local.set as ReturnType<typeof vi.fn>).mockImplementation((_items, callback) => {
           callback?.();
           return Promise.resolve();
         });
 
         await expect(Storage.saveRule(rule)).rejects.toEqual(error);
 
-        delete chrome.runtime.lastError;
       });
     });
 
     describe('deleteRule', () => {
-      it('should reject if chrome.storage.local.get fails', async () => {
+      it('should reject if Browser.storage.local.get fails', async () => {
         const error = new Error('Storage get failed');
-        (chrome.storage.local.get as jest.Mock).mockImplementation((_keys, callback) => {
-          chrome.runtime.lastError = error;
+        (Browser.storage.local.get as ReturnType<typeof vi.fn>).mockImplementation((_keys, callback) => {
           callback?.({});
           return Promise.resolve({});
         });
 
         await expect(Storage.deleteRule('1')).rejects.toEqual(error);
 
-        delete chrome.runtime.lastError;
       });
 
-      it('should reject if chrome.storage.local.set fails', async () => {
+      it('should reject if Browser.storage.local.set fails', async () => {
         const error = new Error('Storage set failed');
         const rule: Rule = {
           id: '1',
@@ -504,69 +494,61 @@ describe('Storage', () => {
           updatedAt: Date.now(),
         };
 
-        (chrome.storage.local.get as jest.Mock).mockImplementation((_keys, callback) => {
+        (Browser.storage.local.get as ReturnType<typeof vi.fn>).mockImplementation((_keys, callback) => {
           callback?.({ rules: [rule] });
           return Promise.resolve({ rules: [rule] });
         });
-        (chrome.storage.local.set as jest.Mock).mockImplementation((_items, callback) => {
-          chrome.runtime.lastError = error;
+        (Browser.storage.local.set as ReturnType<typeof vi.fn>).mockImplementation((_items, callback) => {
           callback?.();
           return Promise.resolve();
         });
 
         await expect(Storage.deleteRule('1')).rejects.toEqual(error);
 
-        delete chrome.runtime.lastError;
       });
     });
 
     describe('getSettings', () => {
-      it('should reject if chrome.storage.local.get fails', async () => {
+      it('should reject if Browser.storage.local.get fails', async () => {
         const error = new Error('Storage get failed');
-        (chrome.storage.local.get as jest.Mock).mockImplementation((_keys, callback) => {
-          chrome.runtime.lastError = error;
+        (Browser.storage.local.get as ReturnType<typeof vi.fn>).mockImplementation((_keys, callback) => {
           callback?.({});
           return Promise.resolve();
         });
 
         await expect(Storage.getSettings()).rejects.toEqual(error);
 
-        delete chrome.runtime.lastError;
       });
     });
 
     describe('saveSettings', () => {
-      it('should reject if chrome.storage.local.set fails', async () => {
+      it('should reject if Browser.storage.local.set fails', async () => {
         const error = new Error('Storage set failed');
-        (chrome.storage.local.set as jest.Mock).mockImplementation((_items, callback) => {
-          chrome.runtime.lastError = error;
+        (Browser.storage.local.set as ReturnType<typeof vi.fn>).mockImplementation((_items, callback) => {
           callback?.();
           return Promise.resolve();
         });
 
         await expect(Storage.saveSettings(DEFAULT_SETTINGS)).rejects.toEqual(error);
 
-        delete chrome.runtime.lastError;
       });
     });
 
     describe('getGroups', () => {
-      it('should reject if chrome.storage.local.get fails', async () => {
+      it('should reject if Browser.storage.local.get fails', async () => {
         const error = new Error('Storage get failed');
-        (chrome.storage.local.get as jest.Mock).mockImplementation((_keys, callback) => {
-          chrome.runtime.lastError = error;
+        (Browser.storage.local.get as ReturnType<typeof vi.fn>).mockImplementation((_keys, callback) => {
           callback?.({});
           return Promise.resolve();
         });
 
         await expect(Storage.getGroups()).rejects.toEqual(error);
 
-        delete chrome.runtime.lastError;
       });
     });
 
     describe('saveGroup', () => {
-      it('should reject if chrome.storage.local.get fails', async () => {
+      it('should reject if Browser.storage.local.get fails', async () => {
         const error = new Error('Storage get failed');
         const group: RuleGroup = {
           id: '1',
@@ -574,18 +556,16 @@ describe('Storage', () => {
           createdAt: Date.now(),
         };
 
-        (chrome.storage.local.get as jest.Mock).mockImplementation((_keys, callback) => {
-          chrome.runtime.lastError = error;
+        (Browser.storage.local.get as ReturnType<typeof vi.fn>).mockImplementation((_keys, callback) => {
           callback?.({});
           return Promise.resolve();
         });
 
         await expect(Storage.saveGroup(group)).rejects.toEqual(error);
 
-        delete chrome.runtime.lastError;
       });
 
-      it('should reject if chrome.storage.local.set fails', async () => {
+      it('should reject if Browser.storage.local.set fails', async () => {
         const error = new Error('Storage set failed');
         const group: RuleGroup = {
           id: '1',
@@ -593,37 +573,33 @@ describe('Storage', () => {
           createdAt: Date.now(),
         };
 
-        (chrome.storage.local.get as jest.Mock).mockImplementation((_keys, callback) => {
+        (Browser.storage.local.get as ReturnType<typeof vi.fn>).mockImplementation((_keys, callback) => {
           callback?.({ groups: [] });
           return Promise.resolve({ groups: [] });
         });
-        (chrome.storage.local.set as jest.Mock).mockImplementation((_items, callback) => {
-          chrome.runtime.lastError = error;
+        (Browser.storage.local.set as ReturnType<typeof vi.fn>).mockImplementation((_items, callback) => {
           callback?.();
           return Promise.resolve();
         });
 
         await expect(Storage.saveGroup(group)).rejects.toEqual(error);
 
-        delete chrome.runtime.lastError;
       });
     });
 
     describe('deleteGroup', () => {
-      it('should reject if chrome.storage.local.get fails', async () => {
+      it('should reject if Browser.storage.local.get fails', async () => {
         const error = new Error('Storage get failed');
-        (chrome.storage.local.get as jest.Mock).mockImplementation((_keys, callback) => {
-          chrome.runtime.lastError = error;
+        (Browser.storage.local.get as ReturnType<typeof vi.fn>).mockImplementation((_keys, callback) => {
           callback?.({});
           return Promise.resolve();
         });
 
         await expect(Storage.deleteGroup('1')).rejects.toEqual(error);
 
-        delete chrome.runtime.lastError;
       });
 
-      it('should reject if chrome.storage.local.set fails', async () => {
+      it('should reject if Browser.storage.local.set fails', async () => {
         const error = new Error('Storage set failed');
         const group: RuleGroup = {
           id: '1',
@@ -631,19 +607,17 @@ describe('Storage', () => {
           createdAt: Date.now(),
         };
 
-        (chrome.storage.local.get as jest.Mock).mockImplementation((_keys, callback) => {
+        (Browser.storage.local.get as ReturnType<typeof vi.fn>).mockImplementation((_keys, callback) => {
           callback?.({ groups: [group] });
           return Promise.resolve({ groups: [group] });
         });
-        (chrome.storage.local.set as jest.Mock).mockImplementation((_items, callback) => {
-          chrome.runtime.lastError = error;
+        (Browser.storage.local.set as ReturnType<typeof vi.fn>).mockImplementation((_items, callback) => {
           callback?.();
           return Promise.resolve();
         });
 
         await expect(Storage.deleteGroup('1')).rejects.toEqual(error);
 
-        delete chrome.runtime.lastError;
       });
     });
   });

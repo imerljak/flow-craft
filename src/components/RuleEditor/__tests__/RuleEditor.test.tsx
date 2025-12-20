@@ -2,17 +2,18 @@
  * RuleEditor component tests - TDD approach
  */
 
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { RuleEditor } from '../RuleEditor';
 import { Rule, RuleType } from "@shared/types";
 
 describe('RuleEditor', () => {
-  const mockOnSave = jest.fn();
-  const mockOnCancel = jest.fn();
+  const mockOnSave = vi.fn();
+  const mockOnCancel = vi.fn();
 
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   describe('Rendering', () => {

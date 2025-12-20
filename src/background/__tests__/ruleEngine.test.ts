@@ -2,6 +2,7 @@
  * Rule Engine tests - TDD approach
  */
 
+import { describe, it, expect, vi } from 'vitest';
 import { RuleEngine } from '../ruleEngine';
 import {
   Rule,
@@ -134,7 +135,7 @@ describe('RuleEngine', () => {
 
       it('should handle invalid regex patterns gracefully', () => {
         // Suppress console.error for this intentional error case
-        const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation();
+        const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation();
 
         const rule: Rule = {
           id: '1',

@@ -1,6 +1,6 @@
 /**
  * Storage layer for FlowCraft
- * Provides abstraction over chrome.storage.local API
+ * Provides abstraction over Browser.storage.local API
  */
 
 import {
@@ -10,6 +10,7 @@ import {
   DEFAULT_SETTINGS,
   StorageSchema,
 } from '@shared/types';
+import Browser from 'webextension-polyfill';
 
 /**
  * Filter options for querying rules
@@ -35,9 +36,9 @@ export class Storage {
    */
   static async initialize(): Promise<void> {
     return new Promise((resolve, reject) => {
-      chrome.storage.local.get(null, (data) => {
-        if (chrome.runtime.lastError) {
-          reject(chrome.runtime.lastError);
+      Browser.storage.local.get(null).then((data) => {
+        if (Browser.runtime.lastError) {
+          reject(Browser.runtime.lastError);
           return;
         }
 
@@ -50,9 +51,9 @@ export class Storage {
             settings: DEFAULT_SETTINGS,
           };
 
-          chrome.storage.local.set(initialData, () => {
-            if (chrome.runtime.lastError) {
-              reject(chrome.runtime.lastError);
+          Browser.storage.local.set(initialData).then(() => {
+            if (Browser.runtime.lastError) {
+              reject(Browser.runtime.lastError);
               return;
             }
             resolve();
@@ -69,13 +70,13 @@ export class Storage {
    */
   static async getRules(filter?: RuleFilter): Promise<Rule[]> {
     return new Promise((resolve, reject) => {
-      chrome.storage.local.get<Partial<StorageSchema>>([this.STORAGE_KEYS.RULES], (data) => {
-        if (chrome.runtime.lastError) {
-          reject(chrome.runtime.lastError);
+      Browser.storage.local.get([this.STORAGE_KEYS.RULES]).then((data) => {
+        if (Browser.runtime.lastError) {
+          reject(Browser.runtime.lastError);
           return;
         }
 
-        let rules: Rule[] = data.rules || [];
+        let rules: Rule[] = data.rules as Rule[] || [];
 
         // Apply filters
         if (filter) {
@@ -105,13 +106,13 @@ export class Storage {
    */
   static async saveRule(rule: Rule): Promise<void> {
     return new Promise((resolve, reject) => {
-      chrome.storage.local.get<Partial<StorageSchema>>([this.STORAGE_KEYS.RULES], (data) => {
-        if (chrome.runtime.lastError) {
-          reject(chrome.runtime.lastError);
+      Browser.storage.local.get([this.STORAGE_KEYS.RULES]).then((data) => {
+        if (Browser.runtime.lastError) {
+          reject(Browser.runtime.lastError);
           return;
         }
 
-        const rules: Rule[] = data.rules || [];
+        const rules: Rule[] = data.rules as Rule[] || [];
         const existingIndex = rules.findIndex((r) => r.id === rule.id);
 
         if (existingIndex >= 0) {
@@ -122,9 +123,9 @@ export class Storage {
           rules.push(rule);
         }
 
-        chrome.storage.local.set({ rules }, () => {
-          if (chrome.runtime.lastError) {
-            reject(chrome.runtime.lastError);
+        Browser.storage.local.set({ rules }).then(() => {
+          if (Browser.runtime.lastError) {
+            reject(Browser.runtime.lastError);
             return;
           }
           resolve();
@@ -138,18 +139,18 @@ export class Storage {
    */
   static async deleteRule(id: string): Promise<void> {
     return new Promise((resolve, reject) => {
-      chrome.storage.local.get<Partial<StorageSchema>>([this.STORAGE_KEYS.RULES], (data) => {
-        if (chrome.runtime.lastError) {
-          reject(chrome.runtime.lastError);
+      Browser.storage.local.get([this.STORAGE_KEYS.RULES]).then((data) => {
+        if (Browser.runtime.lastError) {
+          reject(Browser.runtime.lastError);
           return;
         }
 
-        const rules: Rule[] = data.rules || [];
+        const rules: Rule[] = (data.rules || []) as Rule[];
         const filteredRules = rules.filter((rule) => rule.id !== id);
 
-        chrome.storage.local.set({ rules: filteredRules }, () => {
-          if (chrome.runtime.lastError) {
-            reject(chrome.runtime.lastError);
+        Browser.storage.local.set({ rules: filteredRules }).then(() => {
+          if (Browser.runtime.lastError) {
+            reject(Browser.runtime.lastError);
             return;
           }
           resolve();
@@ -163,13 +164,13 @@ export class Storage {
    */
   static async getSettings(): Promise<Settings> {
     return new Promise((resolve, reject) => {
-      chrome.storage.local.get<Partial<StorageSchema>>([this.STORAGE_KEYS.SETTINGS], (data) => {
-        if (chrome.runtime.lastError) {
-          reject(chrome.runtime.lastError);
+      Browser.storage.local.get([this.STORAGE_KEYS.SETTINGS]).then((data) => {
+        if (Browser.runtime.lastError) {
+          reject(Browser.runtime.lastError);
           return;
         }
 
-        resolve(data.settings || DEFAULT_SETTINGS);
+        resolve((data.settings || DEFAULT_SETTINGS) as Settings);
       });
     });
   }
@@ -179,9 +180,9 @@ export class Storage {
    */
   static async saveSettings(settings: Settings): Promise<void> {
     return new Promise((resolve, reject) => {
-      chrome.storage.local.set({ settings }, () => {
-        if (chrome.runtime.lastError) {
-          reject(chrome.runtime.lastError);
+      Browser.storage.local.set({ settings }).then(() => {
+        if (Browser.runtime.lastError) {
+          reject(Browser.runtime.lastError);
           return;
         }
         resolve();
@@ -194,13 +195,13 @@ export class Storage {
    */
   static async getGroups(): Promise<RuleGroup[]> {
     return new Promise((resolve, reject) => {
-      chrome.storage.local.get<Partial<StorageSchema>>([this.STORAGE_KEYS.GROUPS], (data) => {
-        if (chrome.runtime.lastError) {
-          reject(chrome.runtime.lastError);
+      Browser.storage.local.get([this.STORAGE_KEYS.GROUPS]).then((data) => {
+        if (Browser.runtime.lastError) {
+          reject(Browser.runtime.lastError);
           return;
         }
 
-        resolve(data.groups || []);
+        resolve((data.groups || []) as RuleGroup[]);
       });
     });
   }
@@ -218,13 +219,13 @@ export class Storage {
    */
   static async saveGroup(group: RuleGroup): Promise<void> {
     return new Promise((resolve, reject) => {
-      chrome.storage.local.get<Partial<StorageSchema>>([this.STORAGE_KEYS.GROUPS], (data) => {
-        if (chrome.runtime.lastError) {
-          reject(chrome.runtime.lastError);
+      Browser.storage.local.get([this.STORAGE_KEYS.GROUPS]).then((data) => {
+        if (Browser.runtime.lastError) {
+          reject(Browser.runtime.lastError);
           return;
         }
 
-        const groups: RuleGroup[] = data.groups || [];
+        const groups: RuleGroup[] = (data.groups || []) as RuleGroup[];
         const existingIndex = groups.findIndex((g) => g.id === group.id);
 
         if (existingIndex >= 0) {
@@ -233,9 +234,9 @@ export class Storage {
           groups.push(group);
         }
 
-        chrome.storage.local.set({ groups }, () => {
-          if (chrome.runtime.lastError) {
-            reject(chrome.runtime.lastError);
+        Browser.storage.local.set({ groups }).then(() => {
+          if (Browser.runtime.lastError) {
+            reject(Browser.runtime.lastError);
             return;
           }
           resolve();
@@ -249,18 +250,18 @@ export class Storage {
    */
   static async deleteGroup(id: string): Promise<void> {
     return new Promise((resolve, reject) => {
-      chrome.storage.local.get<Partial<StorageSchema>>([this.STORAGE_KEYS.GROUPS], (data) => {
-        if (chrome.runtime.lastError) {
-          reject(chrome.runtime.lastError);
+      Browser.storage.local.get([this.STORAGE_KEYS.GROUPS]).then((data) => {
+        if (Browser.runtime.lastError) {
+          reject(Browser.runtime.lastError);
           return;
         }
 
-        const groups: RuleGroup[] = data.groups || [];
+        const groups: RuleGroup[] = (data.groups || []) as RuleGroup[];
         const filteredGroups = groups.filter((group) => group.id !== id);
 
-        chrome.storage.local.set({ groups: filteredGroups }, () => {
-          if (chrome.runtime.lastError) {
-            reject(chrome.runtime.lastError);
+        Browser.storage.local.set({ groups: filteredGroups }).then(() => {
+          if (Browser.runtime.lastError) {
+            reject(Browser.runtime.lastError);
             return;
           }
           resolve();
@@ -274,9 +275,9 @@ export class Storage {
    */
   static async clear(): Promise<void> {
     return new Promise((resolve, reject) => {
-      chrome.storage.local.clear(() => {
-        if (chrome.runtime.lastError) {
-          reject(chrome.runtime.lastError);
+      Browser.storage.local.clear().then(() => {
+        if (Browser.runtime.lastError) {
+          reject(Browser.runtime.lastError);
           return;
         }
         resolve();
@@ -289,9 +290,9 @@ export class Storage {
    */
   static async exportData(): Promise<Partial<StorageSchema>> {
     return new Promise((resolve, reject) => {
-      chrome.storage.local.get(null, (data) => {
-        if (chrome.runtime.lastError) {
-          reject(chrome.runtime.lastError);
+      Browser.storage.local.get(null).then((data) => {
+        if (Browser.runtime.lastError) {
+          reject(Browser.runtime.lastError);
           return;
         }
         resolve(data);
@@ -304,9 +305,9 @@ export class Storage {
    */
   static async importData(data: Partial<StorageSchema>): Promise<void> {
     return new Promise((resolve, reject) => {
-      chrome.storage.local.set(data, () => {
-        if (chrome.runtime.lastError) {
-          reject(chrome.runtime.lastError);
+      Browser.storage.local.set(data).then(() => {
+        if (Browser.runtime.lastError) {
+          reject(Browser.runtime.lastError);
           return;
         }
         resolve();
