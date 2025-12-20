@@ -15,11 +15,23 @@ const chromeMock = {
       remove: jest.fn(),
       clear: jest.fn(),
     },
+    onChanged: {
+      addListener: jest.fn(),
+      removeListener: jest.fn(),
+    },
   },
   runtime: {
     lastError: null,
     sendMessage: jest.fn(),
     onMessage: {
+      addListener: jest.fn(),
+      removeListener: jest.fn(),
+    },
+    onInstalled: {
+      addListener: jest.fn(),
+      removeListener: jest.fn(),
+    },
+    onStartup: {
       addListener: jest.fn(),
       removeListener: jest.fn(),
     },
