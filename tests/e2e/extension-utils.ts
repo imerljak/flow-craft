@@ -1,5 +1,5 @@
 import { Page, BrowserContext } from '@playwright/test';
-import { Rule, StorageSchema } from '../../src/shared/types';
+import { Rule } from '../../src/shared/types';
 
 /**
  * Extension testing utilities for Playwright E2E tests
@@ -59,11 +59,7 @@ export class ExtensionUtils {
    */
   static async getRules(page: Page): Promise<Rule[]> {
     return page.evaluate(() => {
-      return new Promise((resolve) => {
-        chrome.storage.local.get<Partial<StorageSchema>>(['rules'], (result) => {
-          resolve(result.rules || []);
-        });
-      });
+      return chrome.storage.local.get(['rules']).then(result => result.rules as Rule[] || [])
     });
   }
 

@@ -1,48 +1,101 @@
 import '@testing-library/jest-dom';
+import { vi } from 'vitest';
 import React from 'react';
 
 // Make React available globally for tests
 (globalThis as { React: typeof React }).React = React;
 
+// Mock webextension-polyfill - needs to match the chrome API structure
+vi.mock('webextension-polyfill', () => {
+  return {
+    default: {
+      storage: {
+        local: {
+          get: vi.fn((_keys, callback) => {
+            callback?.({});
+            return Promise.resolve({});
+          }),
+          set: vi.fn((_items, callback) => {
+            callback?.();
+            return Promise.resolve();
+          }),
+          remove: vi.fn(),
+          clear: vi.fn(),
+        },
+        sync: {
+          get: vi.fn(),
+          set: vi.fn(),
+          remove: vi.fn(),
+          clear: vi.fn(),
+        },
+        onChanged: {
+          addListener: vi.fn(),
+          removeListener: vi.fn(),
+        },
+      },
+      runtime: {
+        lastError: null,
+        sendMessage: vi.fn(),
+        onMessage: {
+          addListener: vi.fn(),
+          removeListener: vi.fn(),
+        },
+        onInstalled: {
+          addListener: vi.fn(),
+          removeListener: vi.fn(),
+        },
+        onStartup: {
+          addListener: vi.fn(),
+          removeListener: vi.fn(),
+        },
+      },
+      declarativeNetRequest: {
+        updateDynamicRules: vi.fn().mockResolvedValue(undefined),
+        getDynamicRules: vi.fn().mockResolvedValue([]),
+      },
+    },
+  };
+});
+
 // Mock Chrome API for testing
 const chromeMock = {
   storage: {
     local: {
-      get: jest.fn(),
-      set: jest.fn(),
-      remove: jest.fn(),
-      clear: jest.fn(),
+      get: vi.fn(),
+      set: vi.fn(),
+      remove: vi.fn(),
+      clear: vi.fn(),
     },
     sync: {
-      get: jest.fn(),
-      set: jest.fn(),
-      remove: jest.fn(),
-      clear: jest.fn(),
+      get: vi.fn(),
+      set: vi.fn(),
+      remove: vi.fn(),
+      clear: vi.fn(),
     },
     onChanged: {
-      addListener: jest.fn(),
-      removeListener: jest.fn(),
+      addListener: vi.fn(),
+      removeListener: vi.fn(),
     },
   },
   runtime: {
     lastError: null,
-    sendMessage: jest.fn(),
+    sendMessage: vi.fn(),
     onMessage: {
-      addListener: jest.fn(),
-      removeListener: jest.fn(),
+      addListener: vi.fn(),
+      removeListener: vi.fn(),
     },
     onInstalled: {
-      addListener: jest.fn(),
-      removeListener: jest.fn(),
+      addListener: vi.fn(),
+      removeListener: vi.fn(),
     },
     onStartup: {
-      addListener: jest.fn(),
-      removeListener: jest.fn(),
+      addListener: vi.fn(),
+      removeListener: vi.fn(),
     },
   },
   declarativeNetRequest: {
-    updateDynamicRules: jest.fn(),
-    getDynamicRules: jest.fn(),
+    updateDynamicRules: vi.fn().mockResolvedValue(undefined),
+    getDynamicRules: vi.fn().mockResolvedValue([]),
   },
 };
 

@@ -3,11 +3,12 @@
  * Tests conversion of FlowCraft rules to Chrome declarativeNetRequest rules
  */
 
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { RequestInterceptor } from '../requestInterceptor';
 import {
   Rule,
   RuleType,
-  
+
   HeaderOperation,
   ResourceType,
 } from '@shared/types';
@@ -340,7 +341,7 @@ describe('RequestInterceptor', () => {
 
   describe('updateDynamicRules', () => {
     beforeEach(() => {
-      jest.clearAllMocks();
+      vi.clearAllMocks();
     });
 
     it('should update Chrome dynamic rules when rules change', async () => {
@@ -370,7 +371,7 @@ describe('RequestInterceptor', () => {
       ];
 
       // Mock existing rules
-      (chrome.declarativeNetRequest.getDynamicRules as jest.Mock).mockResolvedValue([]);
+      (chrome.declarativeNetRequest.getDynamicRules as ReturnType<typeof vi.fn>).mockResolvedValue([]);
 
       await RequestInterceptor.updateDynamicRules(rules);
 
@@ -399,7 +400,7 @@ describe('RequestInterceptor', () => {
       const rules: Rule[] = [];
 
       // Mock existing rules
-      (chrome.declarativeNetRequest.getDynamicRules as jest.Mock).mockResolvedValue([
+      (chrome.declarativeNetRequest.getDynamicRules as ReturnType<typeof vi.fn>).mockResolvedValue([
         { id: 1 },
         { id: 2 },
       ]);
@@ -436,11 +437,11 @@ describe('RequestInterceptor', () => {
         },
       ];
 
-      (chrome.declarativeNetRequest.getDynamicRules as jest.Mock).mockResolvedValue([]);
+      (chrome.declarativeNetRequest.getDynamicRules as ReturnType<typeof vi.fn>).mockResolvedValue([]);
 
       await RequestInterceptor.updateDynamicRules(rules);
 
-      const call = (chrome.declarativeNetRequest.updateDynamicRules as jest.Mock).mock.calls[0];
+      const call = (chrome.declarativeNetRequest.updateDynamicRules as ReturnType<typeof vi.fn>).mock.calls[0];
       expect(call?.[0].addRules).toHaveLength(1);
     });
   });

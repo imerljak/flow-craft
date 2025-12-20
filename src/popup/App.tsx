@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Rule } from '@shared/types';
 import { Storage } from '@storage/index';
+import Browser from 'webextension-polyfill';
 
 /**
  * Simplified popup - informative only, following Requestly pattern
@@ -50,7 +51,7 @@ const App: React.FC = () => {
   };
 
   const openOptionsPage = (): void => {
-    chrome.runtime.openOptionsPage();
+    Browser.runtime.openOptionsPage();
   };
 
   const activeRulesCount = rules.filter((r) => r.enabled).length;

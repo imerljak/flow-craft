@@ -1,3 +1,4 @@
+import { describe, it, expect, beforeAll, afterAll, afterEach, vi } from 'vitest';
 import {
   generateId,
   debounce,
@@ -28,10 +29,10 @@ describe('Utility Functions', () => {
   });
 
   describe('debounce', () => {
-    jest.useFakeTimers();
+    vi.useFakeTimers();
 
     it('should debounce function calls', () => {
-      const func = jest.fn();
+      const func = vi.fn();
       const debouncedFunc = debounce(func, 100);
 
       debouncedFunc();
@@ -40,49 +41,49 @@ describe('Utility Functions', () => {
 
       expect(func).not.toHaveBeenCalled();
 
-      jest.advanceTimersByTime(100);
+      vi.advanceTimersByTime(100);
 
       expect(func).toHaveBeenCalledTimes(1);
     });
 
     it('should pass arguments to debounced function', () => {
-      const func = jest.fn();
+      const func = vi.fn();
       const debouncedFunc = debounce(func, 100);
 
       debouncedFunc('arg1', 'arg2');
 
-      jest.advanceTimersByTime(100);
+      vi.advanceTimersByTime(100);
 
       expect(func).toHaveBeenCalledWith('arg1', 'arg2');
     });
 
     it('should reset timer on subsequent calls', () => {
-      const func = jest.fn();
+      const func = vi.fn();
       const debouncedFunc = debounce(func, 100);
 
       debouncedFunc();
-      jest.advanceTimersByTime(50);
+      vi.advanceTimersByTime(50);
 
       debouncedFunc();
-      jest.advanceTimersByTime(50);
+      vi.advanceTimersByTime(50);
 
       expect(func).not.toHaveBeenCalled();
 
-      jest.advanceTimersByTime(50);
+      vi.advanceTimersByTime(50);
 
       expect(func).toHaveBeenCalledTimes(1);
     });
 
     afterEach(() => {
-      jest.clearAllTimers();
+      vi.clearAllTimers();
     });
   });
 
   describe('throttle', () => {
-    jest.useFakeTimers();
+    vi.useFakeTimers();
 
     it('should throttle function calls', () => {
-      const func = jest.fn();
+      const func = vi.fn();
       const throttledFunc = throttle(func, 100);
 
       throttledFunc();
@@ -91,7 +92,7 @@ describe('Utility Functions', () => {
 
       expect(func).toHaveBeenCalledTimes(1);
 
-      jest.advanceTimersByTime(100);
+      vi.advanceTimersByTime(100);
 
       throttledFunc();
 
@@ -99,7 +100,7 @@ describe('Utility Functions', () => {
     });
 
     it('should pass arguments to throttled function', () => {
-      const func = jest.fn();
+      const func = vi.fn();
       const throttledFunc = throttle(func, 100);
 
       throttledFunc('arg1', 'arg2');
@@ -108,31 +109,31 @@ describe('Utility Functions', () => {
     });
 
     it('should allow execution after throttle period', () => {
-      const func = jest.fn();
+      const func = vi.fn();
       const throttledFunc = throttle(func, 100);
 
       throttledFunc();
       expect(func).toHaveBeenCalledTimes(1);
 
-      jest.advanceTimersByTime(100);
+      vi.advanceTimersByTime(100);
 
       throttledFunc();
       expect(func).toHaveBeenCalledTimes(2);
     });
 
     afterEach(() => {
-      jest.clearAllTimers();
+      vi.clearAllTimers();
     });
   });
 
   describe('formatDate', () => {
     beforeAll(() => {
-      jest.useFakeTimers();
-      jest.setSystemTime(new Date('2024-01-15T12:00:00.000Z'));
+      vi.useFakeTimers();
+      vi.setSystemTime(new Date('2024-01-15T12:00:00.000Z'));
     });
 
     afterAll(() => {
-      jest.useRealTimers();
+      vi.useRealTimers();
     });
 
     it('should return "Just now" for timestamps less than 1 minute ago', () => {

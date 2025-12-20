@@ -37,7 +37,7 @@ Implements core HTTP request interception using Chrome's **declarativeNetRequest
 ### Rule Updates
 ```typescript
 // Automatically syncs when rules change
-chrome.storage.onChanged.addListener((changes, areaName) => {
+Browser.storage.onChanged.addListener((changes, areaName) => {
   if (areaName === 'local' && changes.rules) {
     syncRules();
   }
