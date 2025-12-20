@@ -1,4 +1,5 @@
 import { test, expect, chromium, BrowserContext } from '@playwright/test';
+import path from 'path';
 import { ExtensionUtils } from './extension-utils';
 
 test.describe('FlowCraft - Rule Management', () => {
@@ -6,17 +7,20 @@ test.describe('FlowCraft - Rule Management', () => {
   let extensionId: string;
 
   test.beforeAll(async () => {
-    const browser = await chromium.launch({
+    // Unique user data dir for this test suite
+    const userDataDir = path.join(process.cwd(), '.test-user-data', 'rule-management');
+
+    context = await chromium.launchPersistentContext(userDataDir, {
       headless: false,
       args: [
-        '--disable-extensions-except=' + process.cwd(),
-        '--load-extension=' + process.cwd(),
+        '--disable-extensions-except=' + path.join(process.cwd(), 'dist'),
+        '--load-extension=' + path.join(process.cwd(), 'dist'),
         '--no-sandbox',
         '--disable-setuid-sandbox',
+        
       ],
     });
 
-    context = await browser.newContext();
     extensionId = await ExtensionUtils.getExtensionId(context);
   });
 

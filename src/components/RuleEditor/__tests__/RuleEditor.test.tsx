@@ -62,7 +62,10 @@ describe('RuleEditor', () => {
       const saveButton = screen.getByRole('button', { name: /save/i });
       await user.click(saveButton);
 
-      expect(await screen.findByText(/rule name is required/i)).toBeInTheDocument();
+      // Wait for validation to complete
+      await waitFor(() => {
+        expect(screen.getByText(/rule name is required/i)).toBeInTheDocument();
+      });
       expect(mockOnSave).not.toHaveBeenCalled();
     });
 
@@ -73,10 +76,16 @@ describe('RuleEditor', () => {
       const nameInput = screen.getByLabelText(/rule name/i);
       await user.type(nameInput, 'Test Rule');
 
+      const patternInput = screen.getByLabelText(/url pattern/i);
+      await user.clear(patternInput);
+
       const saveButton = screen.getByRole('button', { name: /save/i });
       await user.click(saveButton);
 
-      expect(await screen.findByText(/url pattern is required/i)).toBeInTheDocument();
+      // Wait for validation to complete
+      await waitFor(() => {
+        expect(screen.getByText(/url pattern is required/i)).toBeInTheDocument();
+      });
       expect(mockOnSave).not.toHaveBeenCalled();
     });
 
@@ -108,7 +117,7 @@ describe('RuleEditor', () => {
       await user.selectOptions(typeSelect, 'regex');
 
       const patternInput = screen.getByLabelText(/url pattern/i);
-      await user.type(patternInput, '[invalid(regex');
+      await user.type(patternInput, '[[invalid(regex');
 
       const saveButton = screen.getByRole('button', { name: /save/i });
       await user.click(saveButton);
@@ -226,7 +235,8 @@ describe('RuleEditor', () => {
 
       await user.selectOptions(screen.getByLabelText(/rule type/i), 'header_modification');
 
-      expect(screen.getByText(/headers/i)).toBeInTheDocument();
+      const headersElements = screen.getAllByText(/headers/i);
+      expect(headersElements.length).toBeGreaterThan(0);
     });
   });
 
