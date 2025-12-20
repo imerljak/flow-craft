@@ -5,6 +5,7 @@
 
 import { Storage } from '@storage/index';
 import { RequestInterceptor } from './requestInterceptor';
+import browser from 'webextension-polyfill';
 
 /**
  * Initialize extension and sync rules
@@ -30,25 +31,26 @@ async function syncRules(): Promise<void> {
 }
 
 // Initialize on install or update
-chrome.runtime.onInstalled.addListener(async () => {
+browser.runtime.onInstalled.addListener(async () => {
   await initializeExtension();
 });
 
 // Initialize on startup
-chrome.runtime.onStartup.addListener(async () => {
+browser.runtime.onStartup.addListener(async () => {
   await syncRules();
 });
 
 // Listen for storage changes and sync rules
-chrome.storage.onChanged.addListener((changes, areaName) => {
+browser.storage.onChanged.addListener((changes, areaName) => {
   if (areaName === 'local' && changes.rules) {
     console.log('Rules changed, syncing...');
     syncRules();
   }
 });
 
+
 // Handle messages from popup/options pages
-chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
+browser.runtime.onMessage.addListener((message: any, _sender, sendResponse) => {
   console.log('Received message:', message);
 
   // Handle async operations

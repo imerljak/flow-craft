@@ -1,13 +1,34 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
-import { crx } from '@crxjs/vite-plugin';
-import manifest from './public/manifest.json';
+import webExtension from 'vite-plugin-web-extension';
 import path from 'path';
 
 export default defineConfig({
   plugins: [
     react(),
-    crx({ manifest }),
+    webExtension({
+      printSummary: true,
+
+      htmlViteConfig: {
+        build: {
+          rollupOptions: {
+            output: {
+              format: "es",
+            }
+          }
+        }
+      },
+
+      scriptViteConfig: {
+        build: {
+          rollupOptions: {
+            output: {
+              format: "es",
+            }
+          }
+        }
+      }
+    }),
   ],
   resolve: {
     alias: {
@@ -17,14 +38,6 @@ export default defineConfig({
       '@background': path.resolve(__dirname, './src/background'),
       '@popup': path.resolve(__dirname, './src/popup'),
       '@storage': path.resolve(__dirname, './src/storage'),
-    },
-  },
-  build: {
-    rollupOptions: {
-      input: {
-        popup: 'index.html',
-        options: 'options.html',
-      },
     },
   },
 });
