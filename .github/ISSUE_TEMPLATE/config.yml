@@ -1,0 +1,11 @@
+blank_issues_enabled: false
+contact_links:
+  - name: 💬 Discussions
+    url: https://github.com/imerljak/flow-craft/discussions
+    about: For questions, ideas, and community discussions
+  - name: 📚 Documentation
+    url: https://github.com/imerljak/flow-craft/blob/main/README.md
+    about: Read the documentation and guides
+  - name: 🧪 Testing Guide
+    url: https://github.com/imerljak/flow-craft/blob/main/TESTING_GUIDE.md
+    about: Comprehensive manual testing guide
