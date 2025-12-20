@@ -8,6 +8,8 @@ import { Rule, RuleGroup, Settings, DEFAULT_SETTINGS, RuleType, HttpMethod } fro
 describe('Storage', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    // Clear chrome.runtime.lastError
+    delete chrome.runtime.lastError;
     // Reset chrome.storage mock
     (chrome.storage.local.get as jest.Mock).mockImplementation((_keys, callback) => {
       callback?.({});
@@ -17,6 +19,11 @@ describe('Storage', () => {
       callback?.();
       return Promise.resolve();
     });
+  });
+
+  afterEach(() => {
+    // Ensure chrome.runtime.lastError is cleaned up
+    delete chrome.runtime.lastError;
   });
 
   describe('initialize', () => {
@@ -365,6 +372,279 @@ describe('Storage', () => {
         { groups: [groups[1]] },
         expect.any(Function)
       );
+    });
+  });
+
+  describe('Error Handling', () => {
+    describe('initialize', () => {
+      it('should reject if chrome.storage.local.get fails', async () => {
+        const error = new Error('Storage get failed');
+        (chrome.storage.local.get as jest.Mock).mockImplementation((_keys, callback) => {
+          chrome.runtime.lastError = error;
+          callback?.({});
+          return Promise.resolve({});
+        });
+
+        await expect(Storage.initialize()).rejects.toEqual(error);
+
+        delete chrome.runtime.lastError;
+      });
+
+      it('should reject if chrome.storage.local.set fails during initialization', async () => {
+        const error = new Error('Storage set failed');
+        (chrome.storage.local.get as jest.Mock).mockImplementation((_keys, callback) => {
+          callback?.({});
+          return Promise.resolve({});
+        });
+        (chrome.storage.local.set as jest.Mock).mockImplementation((_items, callback) => {
+          chrome.runtime.lastError = error;
+          callback?.();
+          return Promise.resolve();
+        });
+
+        await expect(Storage.initialize()).rejects.toEqual(error);
+
+        delete chrome.runtime.lastError;
+      });
+    });
+
+    describe('getRules', () => {
+      it('should reject if chrome.storage.local.get fails', async () => {
+        const error = new Error('Storage get failed');
+        (chrome.storage.local.get as jest.Mock).mockImplementation((_keys, callback) => {
+          chrome.runtime.lastError = error;
+          callback?.({});
+          return Promise.resolve({});
+        });
+
+        await expect(Storage.getRules()).rejects.toEqual(error);
+
+        delete chrome.runtime.lastError;
+      });
+    });
+
+    describe('saveRule', () => {
+      it('should reject if chrome.storage.local.get fails', async () => {
+        const error = new Error('Storage get failed');
+        const rule: Rule = {
+          id: '1',
+          name: 'Test Rule',
+          enabled: true,
+          priority: 1,
+          matcher: { type: 'exact', pattern: 'https://example.com' },
+          action: { type: RuleType.HEADER_MODIFICATION, headers: [] },
+          createdAt: Date.now(),
+          updatedAt: Date.now(),
+        };
+
+        (chrome.storage.local.get as jest.Mock).mockImplementation((_keys, callback) => {
+          chrome.runtime.lastError = error;
+          callback?.({});
+          return Promise.resolve({});
+        });
+
+        await expect(Storage.saveRule(rule)).rejects.toEqual(error);
+
+        delete chrome.runtime.lastError;
+      });
+
+      it('should reject if chrome.storage.local.set fails', async () => {
+        const error = new Error('Storage set failed');
+        const rule: Rule = {
+          id: '1',
+          name: 'Test Rule',
+          enabled: true,
+          priority: 1,
+          matcher: { type: 'exact', pattern: 'https://example.com' },
+          action: { type: RuleType.HEADER_MODIFICATION, headers: [] },
+          createdAt: Date.now(),
+          updatedAt: Date.now(),
+        };
+
+        (chrome.storage.local.get as jest.Mock).mockImplementation((_keys, callback) => {
+          callback?.({ rules: [] });
+          return Promise.resolve({ rules: [] });
+        });
+        (chrome.storage.local.set as jest.Mock).mockImplementation((_items, callback) => {
+          chrome.runtime.lastError = error;
+          callback?.();
+          return Promise.resolve();
+        });
+
+        await expect(Storage.saveRule(rule)).rejects.toEqual(error);
+
+        delete chrome.runtime.lastError;
+      });
+    });
+
+    describe('deleteRule', () => {
+      it('should reject if chrome.storage.local.get fails', async () => {
+        const error = new Error('Storage get failed');
+        (chrome.storage.local.get as jest.Mock).mockImplementation((_keys, callback) => {
+          chrome.runtime.lastError = error;
+          callback?.({});
+          return Promise.resolve({});
+        });
+
+        await expect(Storage.deleteRule('1')).rejects.toEqual(error);
+
+        delete chrome.runtime.lastError;
+      });
+
+      it('should reject if chrome.storage.local.set fails', async () => {
+        const error = new Error('Storage set failed');
+        const rule: Rule = {
+          id: '1',
+          name: 'Test Rule',
+          enabled: true,
+          priority: 1,
+          matcher: { type: 'exact', pattern: 'https://example.com' },
+          action: { type: RuleType.HEADER_MODIFICATION, headers: [] },
+          createdAt: Date.now(),
+          updatedAt: Date.now(),
+        };
+
+        (chrome.storage.local.get as jest.Mock).mockImplementation((_keys, callback) => {
+          callback?.({ rules: [rule] });
+          return Promise.resolve({ rules: [rule] });
+        });
+        (chrome.storage.local.set as jest.Mock).mockImplementation((_items, callback) => {
+          chrome.runtime.lastError = error;
+          callback?.();
+          return Promise.resolve();
+        });
+
+        await expect(Storage.deleteRule('1')).rejects.toEqual(error);
+
+        delete chrome.runtime.lastError;
+      });
+    });
+
+    describe('getSettings', () => {
+      it('should reject if chrome.storage.local.get fails', async () => {
+        const error = new Error('Storage get failed');
+        (chrome.storage.local.get as jest.Mock).mockImplementation((_keys, callback) => {
+          chrome.runtime.lastError = error;
+          callback?.({});
+          return Promise.resolve();
+        });
+
+        await expect(Storage.getSettings()).rejects.toEqual(error);
+
+        delete chrome.runtime.lastError;
+      });
+    });
+
+    describe('saveSettings', () => {
+      it('should reject if chrome.storage.local.set fails', async () => {
+        const error = new Error('Storage set failed');
+        (chrome.storage.local.set as jest.Mock).mockImplementation((_items, callback) => {
+          chrome.runtime.lastError = error;
+          callback?.();
+          return Promise.resolve();
+        });
+
+        await expect(Storage.saveSettings(DEFAULT_SETTINGS)).rejects.toEqual(error);
+
+        delete chrome.runtime.lastError;
+      });
+    });
+
+    describe('getGroups', () => {
+      it('should reject if chrome.storage.local.get fails', async () => {
+        const error = new Error('Storage get failed');
+        (chrome.storage.local.get as jest.Mock).mockImplementation((_keys, callback) => {
+          chrome.runtime.lastError = error;
+          callback?.({});
+          return Promise.resolve();
+        });
+
+        await expect(Storage.getGroups()).rejects.toEqual(error);
+
+        delete chrome.runtime.lastError;
+      });
+    });
+
+    describe('saveGroup', () => {
+      it('should reject if chrome.storage.local.get fails', async () => {
+        const error = new Error('Storage get failed');
+        const group: RuleGroup = {
+          id: '1',
+          name: 'Test Group',
+          createdAt: Date.now(),
+        };
+
+        (chrome.storage.local.get as jest.Mock).mockImplementation((_keys, callback) => {
+          chrome.runtime.lastError = error;
+          callback?.({});
+          return Promise.resolve();
+        });
+
+        await expect(Storage.saveGroup(group)).rejects.toEqual(error);
+
+        delete chrome.runtime.lastError;
+      });
+
+      it('should reject if chrome.storage.local.set fails', async () => {
+        const error = new Error('Storage set failed');
+        const group: RuleGroup = {
+          id: '1',
+          name: 'Test Group',
+          createdAt: Date.now(),
+        };
+
+        (chrome.storage.local.get as jest.Mock).mockImplementation((_keys, callback) => {
+          callback?.({ groups: [] });
+          return Promise.resolve({ groups: [] });
+        });
+        (chrome.storage.local.set as jest.Mock).mockImplementation((_items, callback) => {
+          chrome.runtime.lastError = error;
+          callback?.();
+          return Promise.resolve();
+        });
+
+        await expect(Storage.saveGroup(group)).rejects.toEqual(error);
+
+        delete chrome.runtime.lastError;
+      });
+    });
+
+    describe('deleteGroup', () => {
+      it('should reject if chrome.storage.local.get fails', async () => {
+        const error = new Error('Storage get failed');
+        (chrome.storage.local.get as jest.Mock).mockImplementation((_keys, callback) => {
+          chrome.runtime.lastError = error;
+          callback?.({});
+          return Promise.resolve();
+        });
+
+        await expect(Storage.deleteGroup('1')).rejects.toEqual(error);
+
+        delete chrome.runtime.lastError;
+      });
+
+      it('should reject if chrome.storage.local.set fails', async () => {
+        const error = new Error('Storage set failed');
+        const group: RuleGroup = {
+          id: '1',
+          name: 'Test Group',
+          createdAt: Date.now(),
+        };
+
+        (chrome.storage.local.get as jest.Mock).mockImplementation((_keys, callback) => {
+          callback?.({ groups: [group] });
+          return Promise.resolve({ groups: [group] });
+        });
+        (chrome.storage.local.set as jest.Mock).mockImplementation((_items, callback) => {
+          chrome.runtime.lastError = error;
+          callback?.();
+          return Promise.resolve();
+        });
+
+        await expect(Storage.deleteGroup('1')).rejects.toEqual(error);
+
+        delete chrome.runtime.lastError;
+      });
     });
   });
 });
