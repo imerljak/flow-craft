@@ -1,6 +1,8 @@
 import React from 'react';
 import clsx from 'clsx';
 
+import { Description, Field, Input as HInput, Label } from '@headlessui/react';
+
 export interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
   label?: string;
   error?: string;
@@ -30,21 +32,21 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
     );
 
     return (
-      <div className={clsx('flex flex-col gap-1', fullWidth && 'w-full')}>
+      <Field className={clsx('flex flex-col gap-1', fullWidth && 'w-full')}>
         {label && (
-          <label
+          <Label
             htmlFor={inputId}
             className="text-sm font-medium text-neutral-700 dark:text-neutral-300"
           >
             {label}
-          </label>
+          </Label>
         )}
-        <input ref={ref} id={inputId} className={inputStyles} {...props} />
-        {error && <p className="text-xs text-error-500">{error}</p>}
+        <HInput ref={ref} id={inputId} className={inputStyles} {...props} />
+        {error && <Description className="text-xs text-error-500">{error}</Description>}
         {helperText && !error && (
-          <p className="text-xs text-neutral-600 dark:text-neutral-400">{helperText}</p>
+          <Description className="text-xs text-neutral-600 dark:text-neutral-400">{helperText}</Description>
         )}
-      </div>
+      </Field>
     );
   }
 );

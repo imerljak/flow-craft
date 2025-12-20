@@ -206,8 +206,6 @@ export class RequestInterceptor {
         removeRuleIds: existingRuleIds,
         addRules: chromeRules,
       });
-
-      console.log(`Updated ${chromeRules.length} dynamic rules`);
     } catch (error) {
       console.error('Failed to update dynamic rules:', error);
       throw error;

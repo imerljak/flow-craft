@@ -133,6 +133,9 @@ describe('RuleEngine', () => {
       });
 
       it('should handle invalid regex patterns gracefully', () => {
+        // Suppress console.error for this intentional error case
+        const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation();
+
         const rule: Rule = {
           id: '1',
           name: 'Test Rule',
@@ -151,6 +154,13 @@ describe('RuleEngine', () => {
         };
 
         expect(RuleEngine.matchesUrl(rule, 'https://api.example.com/users')).toBe(false);
+        expect(consoleErrorSpy).toHaveBeenCalledWith(
+          'Invalid regex pattern:',
+          '[invalid(regex',
+          expect.any(SyntaxError)
+        );
+
+        consoleErrorSpy.mockRestore();
       });
     });
 

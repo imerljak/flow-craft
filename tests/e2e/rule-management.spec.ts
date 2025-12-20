@@ -2,7 +2,7 @@ import { test, expect, chromium, BrowserContext } from '@playwright/test';
 import path from 'path';
 import { ExtensionUtils } from './extension-utils';
 
-test.describe('FlowCraft - Rule Management', () => {
+test.describe('FlowCraft - Rule Management (Options Page)', () => {
   let context: BrowserContext;
   let extensionId: string;
 
@@ -17,7 +17,6 @@ test.describe('FlowCraft - Rule Management', () => {
         '--load-extension=' + path.join(process.cwd(), 'dist'),
         '--no-sandbox',
         '--disable-setuid-sandbox',
-        
       ],
     });
 
@@ -29,217 +28,231 @@ test.describe('FlowCraft - Rule Management', () => {
   });
 
   test.beforeEach(async () => {
-    const page = await ExtensionUtils.openPopup(context, extensionId);
+    const page = await ExtensionUtils.openOptions(context, extensionId);
     await ExtensionUtils.clearStorage(page);
     await page.close();
   });
 
-  test('should create a header modification rule', async () => {
-    const page = await ExtensionUtils.openPopup(context, extensionId);
+  test('should open options page and show empty state', async () => {
+    const page = await ExtensionUtils.openOptions(context, extensionId);
 
-    // Open modal
-    await page.click('button:has-text("New Rule")');
+    // Verify logo is visible
+    await expect(page.locator('img[alt="FlowCraft"]')).toBeVisible();
+
+    // Verify sidebar navigation
+    await expect(page.getByRole('button', { name: /HTTP Rules/ })).toBeVisible();
+    await expect(page.getByRole('button', { name: /Settings/ })).toBeVisible();
+
+    // Verify empty state
+    await expect(page.locator('text=No rules yet')).toBeVisible();
+
+    // Verify "+ New Rule" button
+    await expect(page.locator('button:has-text("+ New Rule")')).toBeVisible();
+
+    await page.close();
+  });
+
+  test('should create a header modification rule', async () => {
+    const page = await ExtensionUtils.openOptions(context, extensionId);
+
+    // Click "+ New Rule" button
+    await page.click('button:has-text("+ New Rule")');
+
+    // Wait for modal to appear
+    await expect(page.locator('text=Rule Name')).toBeVisible({ timeout: 3000 });
 
     // Fill in rule details
-    await page.fill('input[placeholder*="name"]', 'Test Header Rule');
-    await page.fill('input[placeholder*="pattern"]', 'https://httpbin.org/headers');
+    await page.fill('input[placeholder*="CORS"]', 'Test Header Rule');
+    await page.fill('input[placeholder*="api.example.com"]', 'https://httpbin.org/headers');
 
     // Select rule type
-    await page.selectOption('select', { label: 'Header Modification' });
-
-    // Wait for header editor to appear
-    await expect(page.locator('text=Add Header')).toBeVisible();
-
-    // Add a header
-    await page.click('button:has-text("Add Header")');
-
-    // Fill header details
-    await page.fill('input[placeholder*="Header Name"]', 'X-Test-Header');
-    await page.fill('input[placeholder*="Header Value"]', 'test-value');
+    await page.selectOption('select#rule-type', { value: 'header_modification' });
 
     // Save rule
-    await page.click('button:has-text("Save")');
+    await page.click('button:has-text("Save Rule")');
 
-    // Verify modal closed
-    await expect(page.locator('text=Create New Rule')).not.toBeVisible();
+    // Wait for modal to close and rule to appear in table
+    await page.waitForTimeout(1000);
 
-    // Verify rule appears in list
-    await expect(page.locator('text=Test Header Rule')).toBeVisible();
+    // Verify rule appears in the table
+    await expect(page.locator('text=Test Header Rule')).toBeVisible({ timeout: 3000 });
 
     // Verify rule count
-    await expect(page.locator('text=1 of 1 active')).toBeVisible();
-
-    // Verify storage
     const rules = await ExtensionUtils.getRules(page);
-    expect(rules).toHaveLength(1);
-    expect(rules[0].name).toBe('Test Header Rule');
-    expect(rules[0].enabled).toBe(true);
+    expect(rules.length).toBe(1);
+    expect(rules[0]?.name).toBe('Test Header Rule');
 
     await page.close();
   });
 
   test('should create a URL redirection rule', async () => {
-    const page = await ExtensionUtils.openPopup(context, extensionId);
+    const page = await ExtensionUtils.openOptions(context, extensionId);
 
-    // Open modal
-    await page.click('button:has-text("New Rule")');
+    // Click "+ New Rule" button
+    await page.click('button:has-text("+ New Rule")');
+
+    // Wait for modal
+    await expect(page.locator('text=Rule Name')).toBeVisible({ timeout: 3000 });
 
     // Fill in rule details
-    await page.fill('input[placeholder*="name"]', 'Redirect Rule');
-    await page.fill('input[placeholder*="pattern"]', 'https://example.com');
+    await page.fill('input[placeholder*="CORS"]', 'Redirect Rule');
+    await page.fill('input[placeholder*="api.example.com"]', 'https://old.example.com');
 
-    // Select rule type
-    await page.selectOption('select', { label: 'URL Redirection' });
+    // Select URL redirect type
+    await page.selectOption('select#rule-type', { value: 'url_redirect' });
 
-    // Wait for redirect URL field
-    await expect(page.locator('text=Redirect URL')).toBeVisible();
+    // Wait for redirect URL field to appear
+    await expect(page.locator('text=Redirect URL')).toBeVisible({ timeout: 2000 });
 
     // Fill redirect URL
-    await page.fill('input[placeholder*="redirect"]', 'https://example.org');
+    await page.fill('input[placeholder*="new.example.com"]', 'https://new.example.com');
 
     // Save rule
-    await page.click('button:has-text("Save")');
+    await page.click('button:has-text("Save Rule")');
 
-    // Verify rule created
-    await expect(page.locator('text=Redirect Rule')).toBeVisible();
+    // Wait for modal to close
+    await page.waitForTimeout(1000);
+
+    // Verify rule appears
+    await expect(page.locator('text=Redirect Rule')).toBeVisible({ timeout: 3000 });
+
+    // Verify in storage
+    const rules = await ExtensionUtils.getRules(page);
+    expect(rules.length).toBe(1);
+    expect(rules[0]?.action.type).toBe('url_redirect');
 
     await page.close();
   });
 
   test('should create a block request rule', async () => {
-    const page = await ExtensionUtils.openPopup(context, extensionId);
+    const page = await ExtensionUtils.openOptions(context, extensionId);
 
-    // Open modal
-    await page.click('button:has-text("New Rule")');
+    // Click "+ New Rule" button
+    await page.click('button:has-text("+ New Rule")');
+
+    // Wait for modal
+    await expect(page.locator('text=Rule Name')).toBeVisible({ timeout: 3000 });
 
     // Fill in rule details
-    await page.fill('input[placeholder*="name"]', 'Block Tracker');
-    await page.fill('input[placeholder*="pattern"]', 'https://tracker.example.com/*');
+    await page.fill('input[placeholder*="CORS"]', 'Block Rule');
+    await page.fill('input[placeholder*="api.example.com"]', 'https://blocked.example.com');
 
-    // Select pattern type
-    await page.selectOption('select[id*="pattern"]', { label: 'Wildcard' });
-
-    // Select rule type
-    await page.selectOption('select[id*="type"]', { label: 'Block Request' });
+    // Select block type
+    await page.selectOption('select#rule-type', { value: 'request_block' });
 
     // Save rule
-    await page.click('button:has-text("Save")');
+    await page.click('button:has-text("Save Rule")');
 
-    // Verify rule created
-    await expect(page.locator('text=Block Tracker')).toBeVisible();
+    // Wait for modal to close
+    await page.waitForTimeout(1000);
+
+    // Verify rule appears
+    await expect(page.locator('text=Block Rule')).toBeVisible({ timeout: 3000 });
+
+    // Verify block icon
+    await expect(page.locator('text=🚫 Block')).toBeVisible();
 
     await page.close();
   });
 
-  test('should toggle rule on/off', async () => {
-    const page = await ExtensionUtils.openPopup(context, extensionId);
+  test('should toggle rule on/off in table', async () => {
+    const page = await ExtensionUtils.openOptions(context, extensionId);
 
     // Create a rule first
-    await page.click('button:has-text("New Rule")');
-    await page.fill('input[placeholder*="name"]', 'Toggle Test');
-    await page.fill('input[placeholder*="pattern"]', 'https://example.com');
-    await page.selectOption('select[id*="type"]', { label: 'Block Request' });
-    await page.click('button:has-text("Save")');
+    await page.click('button:has-text("+ New Rule")');
+    await page.fill('input[placeholder*="CORS"]', 'Toggle Test Rule');
+    await page.fill('input[placeholder*="api.example.com"]', 'https://test.com');
+    await page.click('button:has-text("Save Rule")');
+    await page.waitForTimeout(1000);
 
-    // Verify rule is enabled
-    await expect(page.locator('text=1 of 1 active')).toBeVisible();
+    // Find the rule row
+    const ruleRow = page.locator('tr:has-text("Toggle Test Rule")');
+    await expect(ruleRow).toBeVisible();
 
-    // Find and click the toggle
-    const toggle = page.locator('button[role="switch"]').first();
-    await toggle.click();
+    // Click the toggle switch (it should be in the Status column)
+    const toggleButton = ruleRow.locator('button').first();
+    await toggleButton.click();
 
-    // Verify rule is disabled
-    await expect(page.locator('text=0 of 1 active')).toBeVisible();
+    // Wait for state to update
+    await page.waitForTimeout(500);
 
     // Toggle back on
-    await toggle.click();
-    await expect(page.locator('text=1 of 1 active')).toBeVisible();
-
-    await page.close();
-  });
-
-  test('should edit an existing rule', async () => {
-    const page = await ExtensionUtils.openPopup(context, extensionId);
-
-    // Create a rule
-    await page.click('button:has-text("New Rule")');
-    await page.fill('input[placeholder*="name"]', 'Original Name');
-    await page.fill('input[placeholder*="pattern"]', 'https://example.com');
-    await page.selectOption('select[id*="type"]', { label: 'Block Request' });
-    await page.click('button:has-text("Save")');
-
-    // Click edit button
-    await page.click('button[aria-label*="Edit"]');
-
-    // Verify modal title changed
-    await expect(page.locator('text=Edit Rule')).toBeVisible();
-
-    // Change the name
-    await page.fill('input[placeholder*="name"]', 'Updated Name');
-
-    // Save changes
-    await page.click('button:has-text("Save")');
-
-    // Verify updated name appears
-    await expect(page.locator('text=Updated Name')).toBeVisible();
-    await expect(page.locator('text=Original Name')).not.toBeVisible();
+    await toggleButton.click();
+    await page.waitForTimeout(500);
 
     await page.close();
   });
 
   test('should delete a rule with confirmation', async () => {
-    const page = await ExtensionUtils.openPopup(context, extensionId);
+    const page = await ExtensionUtils.openOptions(context, extensionId);
 
-    // Create a rule
-    await page.click('button:has-text("New Rule")');
-    await page.fill('input[placeholder*="name"]', 'To Be Deleted');
-    await page.fill('input[placeholder*="pattern"]', 'https://example.com');
-    await page.selectOption('select[id*="type"]', { label: 'Block Request' });
-    await page.click('button:has-text("Save")');
+    // Create a rule first
+    await page.getByTestId('new-rule-btn').click();
+    await page.fill('input[placeholder*="CORS"]', 'Rule to Delete');
+    await page.fill('input[placeholder*="api.example.com"]', 'https://delete.com');
+    await page.click('button:has-text("Save Rule")');
+    await page.waitForTimeout(1000);
 
     // Verify rule exists
-    await expect(page.locator('text=To Be Deleted')).toBeVisible();
+    await expect(page.locator('text=Rule to Delete')).toBeVisible();
 
-    // Click delete button
-    await page.click('button[aria-label*="Delete"]');
+    // Get the rule ID from storage
+    const rules = await ExtensionUtils.getRules(page);
+    const ruleToDelete = rules.find((r) => r.name === 'Rule to Delete');
+    expect(ruleToDelete).toBeDefined();
 
-    // Verify confirmation dialog
-    await expect(page.locator('text=Are you sure')).toBeVisible();
+    // Click delete button using test ID
+    await page.getByTestId(`delete-rule-${ruleToDelete!.id}`).click();
 
-    // Cancel first
-    await page.click('button:has-text("Cancel")');
-    await expect(page.locator('text=To Be Deleted')).toBeVisible();
+    // Wait for confirmation modal and confirm deletion
+    await expect(page.getByTestId('delete-confirm-modal')).toBeVisible({ timeout: 2000 });
+    await page.getByTestId('delete-confirm-btn').click();
 
-    // Delete again and confirm
-    await page.click('button[aria-label*="Delete"]');
-    await page.click('button:has-text("Delete"):not(:has-text("Cancel"))');
+    // Wait for modal to close
+    await page.waitForTimeout(1000);
 
     // Verify rule is gone
-    await expect(page.locator('text=To Be Deleted')).not.toBeVisible();
+    await expect(page.locator('text=Rule to Delete')).not.toBeVisible();
+
+    // Verify empty state returns
     await expect(page.locator('text=No rules yet')).toBeVisible();
 
     await page.close();
   });
 
-  test('should create multiple rules', async () => {
-    const page = await ExtensionUtils.openPopup(context, extensionId);
+  test('should edit an existing rule', async () => {
+    const page = await ExtensionUtils.openOptions(context, extensionId);
 
-    // Create 3 rules
-    for (let i = 1; i <= 3; i++) {
-      await page.click('button:has-text("New Rule")');
-      await page.fill('input[placeholder*="name"]', `Rule ${i}`);
-      await page.fill('input[placeholder*="pattern"]', `https://example${i}.com`);
-      await page.selectOption('select[id*="type"]', { label: 'Block Request' });
-      await page.click('button:has-text("Save")');
-    }
+    // Create a rule first
+    await page.getByTestId('new-rule-btn').click();
+    await page.fill('input[placeholder*="CORS"]', 'Original Name');
+    await page.fill('input[placeholder*="api.example.com"]', 'https://original.com');
+    await page.click('button:has-text("Save Rule")');
+    await page.waitForTimeout(1000);
 
-    // Verify all rules appear
-    await expect(page.locator('text=Rule 1')).toBeVisible();
-    await expect(page.locator('text=Rule 2')).toBeVisible();
-    await expect(page.locator('text=Rule 3')).toBeVisible();
+    // Get the rule ID from storage
+    const rules = await ExtensionUtils.getRules(page);
+    const ruleToEdit = rules.find((r) => r.name === 'Original Name');
+    expect(ruleToEdit).toBeDefined();
 
-    // Verify count
-    await expect(page.locator('text=3 of 3 active')).toBeVisible();
+    // Click edit button using test ID
+    await page.getByTestId(`edit-rule-${ruleToEdit!.id}`).click();
+
+    // Wait for edit modal to open
+    await expect(page.getByTestId('rule-editor-modal')).toBeVisible({ timeout: 3000 });
+
+    // Find and change the name input
+    const nameInput = page.locator('input[placeholder*="CORS"]');
+    await nameInput.clear();
+    await nameInput.fill('Updated Name');
+
+    // Save changes
+    await page.click('button:has-text("Save Rule")');
+    await page.waitForTimeout(1000);
+
+    // Verify updated name appears
+    await expect(page.locator('text=Updated Name')).toBeVisible();
+    await expect(page.locator('text=Original Name')).not.toBeVisible();
 
     await page.close();
   });

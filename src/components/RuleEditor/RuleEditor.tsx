@@ -48,10 +48,6 @@ export const RuleEditor: React.FC<RuleEditorProps> = ({ rule, onSave, onCancel }
     mode: 'onSubmit',
   });
 
-  console.log('RuleEditor Render. Errors:', errors);
-  const values = watch();
-  console.log('RuleEditor Render. Values:', values);
-
   const watchedPatternType = watch('patternType');
   const watchedRuleType = watch('ruleType');
 
@@ -123,16 +119,9 @@ export const RuleEditor: React.FC<RuleEditorProps> = ({ rule, onSave, onCancel }
     onSave(newRule);
   };
 
-  const onError = (errors: any) => {
-    console.log('Form errors:', errors);
-  };
-
   return (
     <form
-      onSubmit={(e) => {
-        console.log('Form submit event fired');
-        handleSubmit(onSubmit, onError)(e);
-      }}
+      onSubmit={handleSubmit(onSubmit)}
       className="space-y-4"
     >
       {/* Rule Name */}

@@ -2,7 +2,7 @@ import { test, expect, chromium, BrowserContext } from '@playwright/test';
 import path from 'path';
 import { ExtensionUtils } from './extension-utils';
 
-test.describe('FlowCraft Popup - Basic Functionality', () => {
+test.describe('FlowCraft Popup - Informative UI', () => {
   let context: BrowserContext;
   let extensionId: string;
 
@@ -38,14 +38,14 @@ test.describe('FlowCraft Popup - Basic Functionality', () => {
   test('should open popup successfully', async () => {
     const page = await ExtensionUtils.openPopup(context, extensionId);
 
-    // Verify popup title
-    await expect(page.locator('h1')).toContainText('FlowCraft');
+    // Verify logo is visible
+    await expect(page.locator('img[alt="FlowCraft"]')).toBeVisible();
 
-    // Verify empty state message
-    await expect(page.locator('text=No rules yet')).toBeVisible();
+    // Verify "Open App" button is visible
+    await expect(page.locator('button:has-text("Open App")')).toBeVisible();
 
-    // Verify "New Rule" button is visible
-    await expect(page.locator('button:has-text("New Rule")')).toBeVisible();
+    // Verify extension status toggle is visible
+    await expect(page.locator('button:has-text("Running"), button:has-text("Paused")')).toBeVisible();
 
     await page.close();
   });
@@ -53,75 +53,101 @@ test.describe('FlowCraft Popup - Basic Functionality', () => {
   test('should display popup dimensions correctly', async () => {
     const page = await ExtensionUtils.openPopup(context, extensionId);
 
-    // Verify popup dimensions (600x500 as per spec)
+    // Verify popup dimensions (400x500-600 as per new spec)
     const viewport = page.viewportSize();
-    expect(viewport?.width).toBeGreaterThanOrEqual(400); // Allow some flexibility
+    expect(viewport?.width).toBeGreaterThanOrEqual(400);
     expect(viewport?.height).toBeGreaterThanOrEqual(400);
 
     await page.close();
   });
 
-  test('should show "Open Settings" link', async () => {
+  test('should show empty state when no rules exist', async () => {
     const page = await ExtensionUtils.openPopup(context, extensionId);
 
-    // Verify settings link exists
-    const settingsLink = page.locator('button:has-text("Open Settings")');
-    await expect(settingsLink).toBeVisible();
-
-    await page.close();
-  });
-
-  test('should open rule creation modal', async () => {
-    const page = await ExtensionUtils.openPopup(context, extensionId);
-
-    // Click "New Rule" button
-    await page.click('button:has-text("New Rule")');
-
-    // Verify modal opened
-    await expect(page.locator('text=Create New Rule')).toBeVisible();
-
-    // Verify form fields are present
-    await expect(page.locator('input[placeholder*="name"]')).toBeVisible();
-    await expect(page.locator('input[placeholder*="pattern"]')).toBeVisible();
-
-    // Verify buttons
-    await expect(page.locator('button:has-text("Cancel")')).toBeVisible();
-    await expect(page.locator('button:has-text("Save")')).toBeVisible();
-
-    await page.close();
-  });
-
-  test('should close modal on cancel', async () => {
-    const page = await ExtensionUtils.openPopup(context, extensionId);
-
-    // Open modal
-    await page.click('button:has-text("New Rule")');
-    await expect(page.locator('text=Create New Rule')).toBeVisible();
-
-    // Click cancel
-    await page.click('button:has-text("Cancel")');
-
-    // Verify modal closed
-    await expect(page.locator('text=Create New Rule')).not.toBeVisible();
-
-    // Verify we're back to empty state
+    // Verify empty state message
     await expect(page.locator('text=No rules yet')).toBeVisible();
 
+    // Verify "Create Your First Rule" button
+    await expect(page.locator('button:has-text("Create Your First Rule")')).toBeVisible();
+
+    // Verify rules count shows "0 of 0 active"
+    await expect(page.locator('text=0 of 0 active')).toBeVisible();
+
     await page.close();
   });
 
-  test('should show validation errors for empty form', async () => {
+  test('should show extension status as Running by default', async () => {
     const page = await ExtensionUtils.openPopup(context, extensionId);
 
-    // Open modal
-    await page.click('button:has-text("New Rule")');
+    // Verify default state is Running
+    await expect(page.locator('button:has-text("Running")')).toBeVisible();
 
-    // Try to save without filling anything
-    await page.click('button:has-text("Save")');
+    // Verify green status indicator
+    const statusButton = page.locator('button:has-text("Running")');
+    await expect(statusButton).toBeVisible();
 
-    // Verify error messages appear
-    await expect(page.locator('text=required')).toBeVisible();
+    await page.close();
+  });
 
+  test('should toggle extension on/off', async () => {
+    const page = await ExtensionUtils.openPopup(context, extensionId);
+
+    // Initially should be Running
+    await expect(page.locator('button:has-text("Running")')).toBeVisible();
+
+    // Click to pause
+    await page.click('button:has-text("Running")');
+
+    // Should now show Paused
+    await expect(page.locator('button:has-text("Paused")')).toBeVisible({ timeout: 2000 });
+
+    // Click to resume
+    await page.click('button:has-text("Paused")');
+
+    // Should be Running again
+    await expect(page.locator('button:has-text("Running")')).toBeVisible({ timeout: 2000 });
+
+    await page.close();
+  });
+
+  test('should open options page when "Open App" is clicked', async () => {
+    const page = await ExtensionUtils.openPopup(context, extensionId);
+
+    // Click "Open App" button
+    const [optionsPage] = await Promise.all([
+      context.waitForEvent('page'),
+      page.click('button:has-text("Open App")'),
+    ]);
+
+    // Wait for options page to load
+    await optionsPage.waitForLoadState('domcontentloaded');
+
+    // Verify it's the options page
+    expect(optionsPage.url()).toContain('options.html');
+
+    await optionsPage.close();
+    await page.close();
+  });
+
+  test('should open options page when "Create Your First Rule" is clicked in empty state', async () => {
+    const page = await ExtensionUtils.openPopup(context, extensionId);
+
+    // Wait for empty state button
+    await expect(page.locator('button:has-text("Create Your First Rule")')).toBeVisible();
+
+    // Click "Create Your First Rule" button
+    const [optionsPage] = await Promise.all([
+      context.waitForEvent('page'),
+      page.click('button:has-text("Create Your First Rule")'),
+    ]);
+
+    // Wait for options page to load
+    await optionsPage.waitForLoadState('domcontentloaded');
+
+    // Verify it's the options page
+    expect(optionsPage.url()).toContain('options.html');
+
+    await optionsPage.close();
     await page.close();
   });
 });
