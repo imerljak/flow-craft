@@ -1,4 +1,8 @@
 import '@testing-library/jest-dom';
+import React from 'react';
+
+// Make React available globally for tests
+(globalThis as { React: typeof React }).React = React;
 
 // Mock Chrome API for testing
 const chromeMock = {
@@ -15,11 +19,23 @@ const chromeMock = {
       remove: jest.fn(),
       clear: jest.fn(),
     },
+    onChanged: {
+      addListener: jest.fn(),
+      removeListener: jest.fn(),
+    },
   },
   runtime: {
     lastError: null,
     sendMessage: jest.fn(),
     onMessage: {
+      addListener: jest.fn(),
+      removeListener: jest.fn(),
+    },
+    onInstalled: {
+      addListener: jest.fn(),
+      removeListener: jest.fn(),
+    },
+    onStartup: {
       addListener: jest.fn(),
       removeListener: jest.fn(),
     },

@@ -13,3 +13,9 @@ export type { ToggleProps } from './Toggle';
 
 export { Modal } from './Modal';
 export type { ModalProps } from './Modal';
+
+export { RuleEditor } from './RuleEditor';
+export type { RuleEditorProps } from './RuleEditor';
+
+export { HeaderEditor } from './RuleEditor';
+export type { HeaderEditorProps } from './RuleEditor';
