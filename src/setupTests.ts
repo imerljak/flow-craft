@@ -1,4 +1,8 @@
 import '@testing-library/jest-dom';
+import React from 'react';
+
+// Make React available globally for tests
+(globalThis as { React: typeof React }).React = React;
 
 // Mock Chrome API for testing
 const chromeMock = {
