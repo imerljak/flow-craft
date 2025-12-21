@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { Modal } from '../Modal';
 
@@ -10,15 +10,17 @@ describe('Modal', () => {
     vi.clearAllMocks();
   });
 
-  it('should render modal when open', () => {
+  it('should render modal when open', async () => {
     render(
       <Modal isOpen={true} onClose={mockOnClose} title="Test Modal">
         <div>Modal Content</div>
       </Modal>
     );
 
-    expect(screen.getByText('Test Modal')).toBeInTheDocument();
-    expect(screen.getByText('Modal Content')).toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.getByText('Test Modal')).toBeInTheDocument();
+      expect(screen.getByText('Modal Content')).toBeInTheDocument();
+    });
   });
 
   it('should not render modal when closed', () => {
@@ -47,65 +49,77 @@ describe('Modal', () => {
     expect(mockOnClose).toHaveBeenCalledTimes(1);
   });
 
-  it('should not show close button when showCloseButton is false', () => {
+  it('should not show close button when showCloseButton is false', async () => {
     render(
       <Modal isOpen={true} onClose={mockOnClose} title="Test Modal" showCloseButton={false}>
         <div>Modal Content</div>
       </Modal>
     );
 
-    expect(screen.queryByLabelText('Close modal')).not.toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.queryByLabelText('Close modal')).not.toBeInTheDocument();
+    });
   });
 
-  it('should render without title', () => {
+  it('should render without title', async () => {
     render(
       <Modal isOpen={true} onClose={mockOnClose}>
         <div>Modal Content</div>
       </Modal>
     );
 
-    expect(screen.getByText('Modal Content')).toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.getByText('Modal Content')).toBeInTheDocument();
+    });
   });
 
-  it('should apply testId when provided', () => {
+  it('should apply testId when provided', async () => {
     render(
       <Modal isOpen={true} onClose={mockOnClose} testId="test-modal">
         <div>Content</div>
       </Modal>
     );
 
-    expect(screen.getByTestId('test-modal')).toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.getByTestId('test-modal')).toBeInTheDocument();
+    });
   });
 
-  it('should apply testId to close button when testId is provided', () => {
+  it('should apply testId to close button when testId is provided', async () => {
     render(
       <Modal isOpen={true} onClose={mockOnClose} testId="test-modal">
         <div>Content</div>
       </Modal>
     );
 
-    expect(screen.getByTestId('test-modal-close')).toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.getByTestId('test-modal-close')).toBeInTheDocument();
+    });
   });
 
-  it('should not apply testId to close button when testId is not provided', () => {
+  it('should not apply testId to close button when testId is not provided', async () => {
     render(
       <Modal isOpen={true} onClose={mockOnClose}>
         <div>Content</div>
       </Modal>
     );
 
-    const closeButton = screen.getByLabelText('Close modal');
-    expect(closeButton).not.toHaveAttribute('data-testid');
+    await waitFor(() => {
+      const closeButton = screen.getByLabelText('Close modal');
+      expect(closeButton).not.toHaveAttribute('data-testid');
+    });
   });
 
-  it('should render with both title and close button by default', () => {
+  it('should render with both title and close button by default', async () => {
     render(
       <Modal isOpen={true} onClose={mockOnClose} title="Test Modal">
         <div>Content</div>
       </Modal>
     );
 
-    expect(screen.getByText('Test Modal')).toBeInTheDocument();
-    expect(screen.getByLabelText('Close modal')).toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.getByText('Test Modal')).toBeInTheDocument();
+      expect(screen.getByLabelText('Close modal')).toBeInTheDocument();
+    });
   });
 });
