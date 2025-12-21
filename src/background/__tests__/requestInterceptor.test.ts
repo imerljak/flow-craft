@@ -12,6 +12,7 @@ import {
   HeaderOperation,
   ResourceType,
 } from '@shared/types';
+import Browser from 'webextension-polyfill';
 
 describe('RequestInterceptor', () => {
   describe('convertToDeclarativeNetRequestRule', () => {
@@ -371,11 +372,11 @@ describe('RequestInterceptor', () => {
       ];
 
       // Mock existing rules
-      (chrome.declarativeNetRequest.getDynamicRules as ReturnType<typeof vi.fn>).mockResolvedValue([]);
+      (Browser.declarativeNetRequest.getDynamicRules as ReturnType<typeof vi.fn>).mockResolvedValue([]);
 
       await RequestInterceptor.updateDynamicRules(rules);
 
-      expect(chrome.declarativeNetRequest.updateDynamicRules).toHaveBeenCalledWith({
+      expect(Browser.declarativeNetRequest.updateDynamicRules).toHaveBeenCalledWith({
         removeRuleIds: [],
         addRules: [
           expect.objectContaining({
@@ -400,14 +401,14 @@ describe('RequestInterceptor', () => {
       const rules: Rule[] = [];
 
       // Mock existing rules
-      (chrome.declarativeNetRequest.getDynamicRules as ReturnType<typeof vi.fn>).mockResolvedValue([
+      (Browser.declarativeNetRequest.getDynamicRules as ReturnType<typeof vi.fn>).mockResolvedValue([
         { id: 1 },
         { id: 2 },
       ]);
 
       await RequestInterceptor.updateDynamicRules(rules);
 
-      expect(chrome.declarativeNetRequest.updateDynamicRules).toHaveBeenCalledWith({
+      expect(Browser.declarativeNetRequest.updateDynamicRules).toHaveBeenCalledWith({
         removeRuleIds: [1, 2],
         addRules: [],
       });
@@ -437,11 +438,11 @@ describe('RequestInterceptor', () => {
         },
       ];
 
-      (chrome.declarativeNetRequest.getDynamicRules as ReturnType<typeof vi.fn>).mockResolvedValue([]);
+      (Browser.declarativeNetRequest.getDynamicRules as ReturnType<typeof vi.fn>).mockResolvedValue([]);
 
       await RequestInterceptor.updateDynamicRules(rules);
 
-      const call = (chrome.declarativeNetRequest.updateDynamicRules as ReturnType<typeof vi.fn>).mock.calls[0];
+      const call = (Browser.declarativeNetRequest.updateDynamicRules as ReturnType<typeof vi.fn>).mock.calls[0];
       expect(call?.[0].addRules).toHaveLength(1);
     });
   });
