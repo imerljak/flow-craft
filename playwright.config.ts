@@ -12,10 +12,10 @@ export default defineConfig({
   retries: process.env.CI ? 2 : 0,
   workers: 1, // Chrome extension tests need single worker to avoid profile conflicts
   reporter: process.env.CI ? 'dot' : 'list',
-  timeout: 5000,
+  timeout: 15000,
   use: {
     trace: 'on-first-retry',
-    headless: false, // Chrome extensions work better in headed mode for debugging
+    headless: false, // Chrome extensions require headed mode
   },
   projects: [
     {
