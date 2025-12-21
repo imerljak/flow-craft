@@ -19,6 +19,15 @@ export default defineConfig({
     // Jest: setupFilesAfterEnv -> Vitest: setupFiles
     setupFiles: [path.resolve(__dirname, 'src/setupTests.ts')],
 
+    // Suppress expected error logs from console
+    onConsoleLog(log, type) {
+      // Suppress intentional invalid regex error from ruleEngine test
+      if (type === 'stderr' && log.includes('Invalid regex pattern')) {
+        return false;
+      }
+      return true;
+    },
+
     // Coverage settings (Vitest uses c8/istanbul under the hood)
     coverage: {
       provider: 'v8',

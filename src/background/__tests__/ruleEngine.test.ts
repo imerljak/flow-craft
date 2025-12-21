@@ -135,7 +135,9 @@ describe('RuleEngine', () => {
 
       it('should handle invalid regex patterns gracefully', () => {
         // Suppress console.error for this intentional error case
-        const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation();
+        const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {
+          // Intentionally suppress output for expected error
+        });
 
         const rule: Rule = {
           id: '1',
