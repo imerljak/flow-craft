@@ -12,15 +12,9 @@ describe('Storage', () => {
     // Clear Browser.runtime.lastError
     delete Browser.runtime.lastError;
 
-    // Reset Browser.storage mocks to default behavior
-    (Browser.storage.local.get as ReturnType<typeof vi.fn>).mockReset().mockImplementation((_keys, callback) => {
-      callback?.({});
-      return Promise.resolve({});
-    });
-    (Browser.storage.local.set as ReturnType<typeof vi.fn>).mockReset().mockImplementation((_items, callback) => {
-      callback?.();
-      return Promise.resolve();
-    });
+    // Reset Browser.storage mocks to default behavior (promise-based API)
+    (Browser.storage.local.get as ReturnType<typeof vi.fn>).mockReset().mockResolvedValue({});
+    (Browser.storage.local.set as ReturnType<typeof vi.fn>).mockReset().mockResolvedValue(undefined);
   });
 
   afterEach(() => {
@@ -30,10 +24,7 @@ describe('Storage', () => {
 
   describe('initialize', () => {
     it('should initialize with default settings if no data exists', async () => {
-      (Browser.storage.local.get as ReturnType<typeof vi.fn>).mockImplementation((_keys, callback) => {
-        callback?.({});
-        return Promise.resolve({});
-      });
+      (Browser.storage.local.get as ReturnType<typeof vi.fn>).mockResolvedValue({});
 
       await Storage.initialize();
 
@@ -42,8 +33,7 @@ describe('Storage', () => {
           settings: DEFAULT_SETTINGS,
           rules: [],
           groups: [],
-        }),
-        expect.any(Function)
+        })
       );
     });
 
@@ -54,10 +44,7 @@ describe('Storage', () => {
         groups: [],
       };
 
-      (Browser.storage.local.get as ReturnType<typeof vi.fn>).mockImplementation((_keys, callback) => {
-        callback?.(existingData);
-        return Promise.resolve(existingData);
-      });
+      (Browser.storage.local.get as ReturnType<typeof vi.fn>).mockResolvedValue(existingData);
 
       await Storage.initialize();
 
@@ -67,10 +54,7 @@ describe('Storage', () => {
 
   describe('getRules', () => {
     it('should return empty array if no rules exist', async () => {
-      (Browser.storage.local.get as ReturnType<typeof vi.fn>).mockImplementation((_keys, callback) => {
-        callback?.({ rules: [] });
-        return Promise.resolve({ rules: [] });
-      });
+      (Browser.storage.local.get as ReturnType<typeof vi.fn>).mockResolvedValue({ rules: [] });
 
       const rules = await Storage.getRules();
 
@@ -98,10 +82,7 @@ describe('Storage', () => {
         },
       ];
 
-      (Browser.storage.local.get as ReturnType<typeof vi.fn>).mockImplementation((_keys, callback) => {
-        callback?.({ rules: mockRules });
-        return Promise.resolve({ rules: mockRules });
-      });
+      (Browser.storage.local.get as ReturnType<typeof vi.fn>).mockResolvedValue({ rules: mockRules });
 
       const rules = await Storage.getRules();
 
@@ -132,10 +113,7 @@ describe('Storage', () => {
         },
       ];
 
-      (Browser.storage.local.get as ReturnType<typeof vi.fn>).mockImplementation((_keys, callback) => {
-        callback?.({ rules: mockRules });
-        return Promise.resolve({ rules: mockRules });
-      });
+      (Browser.storage.local.get as ReturnType<typeof vi.fn>).mockResolvedValue({ rules: mockRules });
 
       const enabledRules = await Storage.getRules({ enabled: true });
 
@@ -158,16 +136,12 @@ describe('Storage', () => {
         updatedAt: Date.now(),
       };
 
-      (Browser.storage.local.get as ReturnType<typeof vi.fn>).mockImplementation((_keys, callback) => {
-        callback?.({ rules: existingRules });
-        return Promise.resolve({ rules: existingRules });
-      });
+      (Browser.storage.local.get as ReturnType<typeof vi.fn>).mockResolvedValue({ rules: existingRules });
 
       await Storage.saveRule(newRule);
 
       expect(Browser.storage.local.set).toHaveBeenCalledWith(
-        { rules: [newRule] },
-        expect.any(Function)
+        { rules: [newRule] }
       );
     });
 
@@ -189,16 +163,12 @@ describe('Storage', () => {
         updatedAt: Date.now(),
       };
 
-      (Browser.storage.local.get as ReturnType<typeof vi.fn>).mockImplementation((_keys, callback) => {
-        callback?.({ rules: [existingRule] });
-        return Promise.resolve({ rules: [existingRule] });
-      });
+      (Browser.storage.local.get as ReturnType<typeof vi.fn>).mockResolvedValue({ rules: [existingRule] });
 
       await Storage.saveRule(updatedRule);
 
       expect(Browser.storage.local.set).toHaveBeenCalledWith(
-        { rules: [updatedRule] },
-        expect.any(Function)
+        { rules: [updatedRule] }
       );
     });
   });
@@ -228,39 +198,29 @@ describe('Storage', () => {
         },
       ];
 
-      (Browser.storage.local.get as ReturnType<typeof vi.fn>).mockImplementation((_keys, callback) => {
-        callback?.({ rules });
-        return Promise.resolve({ rules });
-      });
+      (Browser.storage.local.get as ReturnType<typeof vi.fn>).mockResolvedValue({ rules });
 
       await Storage.deleteRule('1');
 
       expect(Browser.storage.local.set).toHaveBeenCalledWith(
-        { rules: [rules[1]] },
-        expect.any(Function)
+        { rules: [rules[1]] }
       );
     });
 
     it('should do nothing if rule does not exist', async () => {
       const rules: Rule[] = [];
 
-      (Browser.storage.local.get as ReturnType<typeof vi.fn>).mockImplementation((_keys, callback) => {
-        callback?.({ rules });
-        return Promise.resolve({ rules });
-      });
+      (Browser.storage.local.get as ReturnType<typeof vi.fn>).mockResolvedValue({ rules });
 
       await Storage.deleteRule('non-existent');
 
-      expect(Browser.storage.local.set).toHaveBeenCalledWith({ rules: [] }, expect.any(Function));
+      expect(Browser.storage.local.set).toHaveBeenCalledWith({ rules: [] });
     });
   });
 
   describe('getSettings', () => {
     it('should return default settings if none exist', async () => {
-      (Browser.storage.local.get as ReturnType<typeof vi.fn>).mockImplementation((_keys, callback) => {
-        callback?.({});
-        return Promise.resolve({});
-      });
+      (Browser.storage.local.get as ReturnType<typeof vi.fn>).mockResolvedValue({});
 
       const settings = await Storage.getSettings();
 
@@ -273,10 +233,7 @@ describe('Storage', () => {
         theme: 'dark',
       };
 
-      (Browser.storage.local.get as ReturnType<typeof vi.fn>).mockImplementation((_keys, callback) => {
-        callback?.({ settings: customSettings });
-        return Promise.resolve({ settings: customSettings });
-      });
+      (Browser.storage.local.get as ReturnType<typeof vi.fn>).mockResolvedValue({ settings: customSettings });
 
       const settings = await Storage.getSettings();
 
@@ -294,18 +251,14 @@ describe('Storage', () => {
       await Storage.saveSettings(newSettings);
 
       expect(Browser.storage.local.set).toHaveBeenCalledWith(
-        { settings: newSettings },
-        expect.any(Function)
+        { settings: newSettings }
       );
     });
   });
 
   describe('getGroups', () => {
     it('should return empty array if no groups exist', async () => {
-      (Browser.storage.local.get as ReturnType<typeof vi.fn>).mockImplementation((_keys, callback) => {
-        callback?.({ groups: [] });
-        return Promise.resolve({ groups: [] });
-      });
+      (Browser.storage.local.get as ReturnType<typeof vi.fn>).mockResolvedValue({ groups: [] });
 
       const groups = await Storage.getGroups();
 
@@ -323,10 +276,7 @@ describe('Storage', () => {
         },
       ];
 
-      (Browser.storage.local.get as ReturnType<typeof vi.fn>).mockImplementation((_keys, callback) => {
-        callback?.({ groups: mockGroups });
-        return Promise.resolve({ groups: mockGroups });
-      });
+      (Browser.storage.local.get as ReturnType<typeof vi.fn>).mockResolvedValue({ groups: mockGroups });
 
       const groups = await Storage.getGroups();
 
@@ -342,16 +292,12 @@ describe('Storage', () => {
         createdAt: Date.now(),
       };
 
-      (Browser.storage.local.get as ReturnType<typeof vi.fn>).mockImplementation((_keys, callback) => {
-        callback?.({ groups: [] });
-        return Promise.resolve({ groups: [] });
-      });
+      (Browser.storage.local.get as ReturnType<typeof vi.fn>).mockResolvedValue({ groups: [] });
 
       await Storage.saveGroup(newGroup);
 
       expect(Browser.storage.local.set).toHaveBeenCalledWith(
-        { groups: [newGroup] },
-        expect.any(Function)
+        { groups: [newGroup] }
       );
     });
   });
@@ -363,16 +309,12 @@ describe('Storage', () => {
         { id: '2', name: 'Group 2', createdAt: Date.now() },
       ];
 
-      (Browser.storage.local.get as ReturnType<typeof vi.fn>).mockImplementation((_keys, callback) => {
-        callback?.({ groups });
-        return Promise.resolve({ groups });
-      });
+      (Browser.storage.local.get as ReturnType<typeof vi.fn>).mockResolvedValue({ groups });
 
       await Storage.deleteGroup('1');
 
       expect(Browser.storage.local.set).toHaveBeenCalledWith(
-        { groups: [groups[1]] },
-        expect.any(Function)
+        { groups: [groups[1]] }
       );
     });
   });
@@ -381,41 +323,26 @@ describe('Storage', () => {
     describe('initialize', () => {
       it('should reject if Browser.storage.local.get fails', async () => {
         const error = new Error('Storage get failed');
-        (Browser.storage.local.get as ReturnType<typeof vi.fn>).mockImplementation((_keys, callback) => {
-          callback?.({});
-          return Promise.resolve({});
-        });
+        (Browser.storage.local.get as ReturnType<typeof vi.fn>).mockRejectedValue(error);
 
         await expect(Storage.initialize()).rejects.toEqual(error);
-
       });
 
       it('should reject if Browser.storage.local.set fails during initialization', async () => {
         const error = new Error('Storage set failed');
-        (Browser.storage.local.get as ReturnType<typeof vi.fn>).mockImplementation((_keys, callback) => {
-          callback?.({});
-          return Promise.resolve({});
-        });
-        (Browser.storage.local.set as ReturnType<typeof vi.fn>).mockImplementation((_items, callback) => {
-          callback?.();
-          return Promise.resolve();
-        });
+        (Browser.storage.local.get as ReturnType<typeof vi.fn>).mockResolvedValue({});
+        (Browser.storage.local.set as ReturnType<typeof vi.fn>).mockRejectedValue(error);
 
         await expect(Storage.initialize()).rejects.toEqual(error);
-
       });
     });
 
     describe('getRules', () => {
       it('should reject if Browser.storage.local.get fails', async () => {
         const error = new Error('Storage get failed');
-        (Browser.storage.local.get as ReturnType<typeof vi.fn>).mockImplementation((_keys, callback) => {
-          callback?.({});
-          return Promise.resolve({});
-        });
+        (Browser.storage.local.get as ReturnType<typeof vi.fn>).mockRejectedValue(error);
 
         await expect(Storage.getRules()).rejects.toEqual(error);
-
       });
     });
 
@@ -433,13 +360,9 @@ describe('Storage', () => {
           updatedAt: Date.now(),
         };
 
-        (Browser.storage.local.get as ReturnType<typeof vi.fn>).mockImplementation((_keys, callback) => {
-          callback?.({});
-          return Promise.resolve({});
-        });
+        (Browser.storage.local.get as ReturnType<typeof vi.fn>).mockRejectedValue(error);
 
         await expect(Storage.saveRule(rule)).rejects.toEqual(error);
-
       });
 
       it('should reject if Browser.storage.local.set fails', async () => {
@@ -455,30 +378,19 @@ describe('Storage', () => {
           updatedAt: Date.now(),
         };
 
-        (Browser.storage.local.get as ReturnType<typeof vi.fn>).mockImplementation((_keys, callback) => {
-          callback?.({ rules: [] });
-          return Promise.resolve({ rules: [] });
-        });
-        (Browser.storage.local.set as ReturnType<typeof vi.fn>).mockImplementation((_items, callback) => {
-          callback?.();
-          return Promise.resolve();
-        });
+        (Browser.storage.local.get as ReturnType<typeof vi.fn>).mockResolvedValue({ rules: [] });
+        (Browser.storage.local.set as ReturnType<typeof vi.fn>).mockRejectedValue(error);
 
         await expect(Storage.saveRule(rule)).rejects.toEqual(error);
-
       });
     });
 
     describe('deleteRule', () => {
       it('should reject if Browser.storage.local.get fails', async () => {
         const error = new Error('Storage get failed');
-        (Browser.storage.local.get as ReturnType<typeof vi.fn>).mockImplementation((_keys, callback) => {
-          callback?.({});
-          return Promise.resolve({});
-        });
+        (Browser.storage.local.get as ReturnType<typeof vi.fn>).mockRejectedValue(error);
 
         await expect(Storage.deleteRule('1')).rejects.toEqual(error);
-
       });
 
       it('should reject if Browser.storage.local.set fails', async () => {
@@ -494,27 +406,17 @@ describe('Storage', () => {
           updatedAt: Date.now(),
         };
 
-        (Browser.storage.local.get as ReturnType<typeof vi.fn>).mockImplementation((_keys, callback) => {
-          callback?.({ rules: [rule] });
-          return Promise.resolve({ rules: [rule] });
-        });
-        (Browser.storage.local.set as ReturnType<typeof vi.fn>).mockImplementation((_items, callback) => {
-          callback?.();
-          return Promise.resolve();
-        });
+        (Browser.storage.local.get as ReturnType<typeof vi.fn>).mockResolvedValue({ rules: [rule] });
+        (Browser.storage.local.set as ReturnType<typeof vi.fn>).mockRejectedValue(error);
 
         await expect(Storage.deleteRule('1')).rejects.toEqual(error);
-
       });
     });
 
     describe('getSettings', () => {
       it('should reject if Browser.storage.local.get fails', async () => {
         const error = new Error('Storage get failed');
-        (Browser.storage.local.get as ReturnType<typeof vi.fn>).mockImplementation((_keys, callback) => {
-          callback?.({});
-          return Promise.resolve();
-        });
+        (Browser.storage.local.get as ReturnType<typeof vi.fn>).mockRejectedValue(error);
 
         await expect(Storage.getSettings()).rejects.toEqual(error);
 
@@ -524,23 +426,16 @@ describe('Storage', () => {
     describe('saveSettings', () => {
       it('should reject if Browser.storage.local.set fails', async () => {
         const error = new Error('Storage set failed');
-        (Browser.storage.local.set as ReturnType<typeof vi.fn>).mockImplementation((_items, callback) => {
-          callback?.();
-          return Promise.resolve();
-        });
+        (Browser.storage.local.set as ReturnType<typeof vi.fn>).mockRejectedValue(error);
 
         await expect(Storage.saveSettings(DEFAULT_SETTINGS)).rejects.toEqual(error);
-
       });
     });
 
     describe('getGroups', () => {
       it('should reject if Browser.storage.local.get fails', async () => {
         const error = new Error('Storage get failed');
-        (Browser.storage.local.get as ReturnType<typeof vi.fn>).mockImplementation((_keys, callback) => {
-          callback?.({});
-          return Promise.resolve();
-        });
+        (Browser.storage.local.get as ReturnType<typeof vi.fn>).mockRejectedValue(error);
 
         await expect(Storage.getGroups()).rejects.toEqual(error);
 
@@ -556,13 +451,9 @@ describe('Storage', () => {
           createdAt: Date.now(),
         };
 
-        (Browser.storage.local.get as ReturnType<typeof vi.fn>).mockImplementation((_keys, callback) => {
-          callback?.({});
-          return Promise.resolve();
-        });
+        (Browser.storage.local.get as ReturnType<typeof vi.fn>).mockRejectedValue(error);
 
         await expect(Storage.saveGroup(group)).rejects.toEqual(error);
-
       });
 
       it('should reject if Browser.storage.local.set fails', async () => {
@@ -573,30 +464,19 @@ describe('Storage', () => {
           createdAt: Date.now(),
         };
 
-        (Browser.storage.local.get as ReturnType<typeof vi.fn>).mockImplementation((_keys, callback) => {
-          callback?.({ groups: [] });
-          return Promise.resolve({ groups: [] });
-        });
-        (Browser.storage.local.set as ReturnType<typeof vi.fn>).mockImplementation((_items, callback) => {
-          callback?.();
-          return Promise.resolve();
-        });
+        (Browser.storage.local.get as ReturnType<typeof vi.fn>).mockResolvedValue({ groups: [] });
+        (Browser.storage.local.set as ReturnType<typeof vi.fn>).mockRejectedValue(error);
 
         await expect(Storage.saveGroup(group)).rejects.toEqual(error);
-
       });
     });
 
     describe('deleteGroup', () => {
       it('should reject if Browser.storage.local.get fails', async () => {
         const error = new Error('Storage get failed');
-        (Browser.storage.local.get as ReturnType<typeof vi.fn>).mockImplementation((_keys, callback) => {
-          callback?.({});
-          return Promise.resolve();
-        });
+        (Browser.storage.local.get as ReturnType<typeof vi.fn>).mockRejectedValue(error);
 
         await expect(Storage.deleteGroup('1')).rejects.toEqual(error);
-
       });
 
       it('should reject if Browser.storage.local.set fails', async () => {
@@ -607,17 +487,10 @@ describe('Storage', () => {
           createdAt: Date.now(),
         };
 
-        (Browser.storage.local.get as ReturnType<typeof vi.fn>).mockImplementation((_keys, callback) => {
-          callback?.({ groups: [group] });
-          return Promise.resolve({ groups: [group] });
-        });
-        (Browser.storage.local.set as ReturnType<typeof vi.fn>).mockImplementation((_items, callback) => {
-          callback?.();
-          return Promise.resolve();
-        });
+        (Browser.storage.local.get as ReturnType<typeof vi.fn>).mockResolvedValue({ groups: [group] });
+        (Browser.storage.local.set as ReturnType<typeof vi.fn>).mockRejectedValue(error);
 
         await expect(Storage.deleteGroup('1')).rejects.toEqual(error);
-
       });
     });
   });

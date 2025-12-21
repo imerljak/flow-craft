@@ -11,16 +11,10 @@ vi.mock('webextension-polyfill', () => {
     default: {
       storage: {
         local: {
-          get: vi.fn((_keys, callback) => {
-            callback?.({});
-            return Promise.resolve({});
-          }),
-          set: vi.fn((_items, callback) => {
-            callback?.();
-            return Promise.resolve();
-          }),
-          remove: vi.fn(),
-          clear: vi.fn(),
+          get: vi.fn().mockResolvedValue({}),
+          set: vi.fn().mockResolvedValue(undefined),
+          remove: vi.fn().mockResolvedValue(undefined),
+          clear: vi.fn().mockResolvedValue(undefined),
         },
         sync: {
           get: vi.fn(),
