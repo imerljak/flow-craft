@@ -158,6 +158,7 @@ describe('HeaderEditor', () => {
 
       // Verify onChange was called with proper structure
       expect(mockOnChange).toHaveBeenCalled();
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const firstCall = mockOnChange.mock.calls[0] as any;
       expect(firstCall[0]).toBeInstanceOf(Array);
       expect(firstCall[0][0]).toHaveProperty('operation');
@@ -178,6 +179,7 @@ describe('HeaderEditor', () => {
 
       // Verify onChange preserves operation and value
       expect(mockOnChange).toHaveBeenCalled();
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const firstCall = mockOnChange.mock.calls[0] as any;
       expect(firstCall[0][0].operation).toBe(HeaderOperation.MODIFY);
       expect(firstCall[0][0].value).toBe('Value');
@@ -196,6 +198,7 @@ describe('HeaderEditor', () => {
 
       // Verify onChange was called with proper structure
       expect(mockOnChange).toHaveBeenCalled();
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const firstCall = mockOnChange.mock.calls[0] as any;
       expect(firstCall[0]).toBeInstanceOf(Array);
       expect(firstCall[0][0]).toHaveProperty('operation');
@@ -216,6 +219,7 @@ describe('HeaderEditor', () => {
 
       // Verify onChange preserves operation and name
       expect(mockOnChange).toHaveBeenCalled();
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const firstCall = mockOnChange.mock.calls[0] as any;
       expect(firstCall[0][0].operation).toBe(HeaderOperation.MODIFY);
       expect(firstCall[0][0].name).toBe('Content-Type');
