@@ -6,6 +6,7 @@
 import { Storage } from '@storage/index';
 import { RequestInterceptor } from './requestInterceptor';
 import { ScriptInjector } from './scriptInjector';
+import { ResponseMocker } from './responseMocker';
 import browser from 'webextension-polyfill';
 import { Rule } from '@shared/types';
 
@@ -26,13 +27,14 @@ async function initializeExtension(): Promise<void> {
 }
 
 /**
- * Sync rules from storage to Chrome's declarativeNetRequest and ScriptInjector
+ * Sync rules from storage to Chrome's declarativeNetRequest, ScriptInjector, and ResponseMocker
  */
 async function syncRules(): Promise<void> {
   try {
     const rules = await Storage.getRules();
     await RequestInterceptor.updateDynamicRules(rules);
     await ScriptInjector.updateScriptRules(rules);
+    await ResponseMocker.updateMockRules(rules);
   } catch (error) {
     console.error('Failed to sync rules:', error);
   }

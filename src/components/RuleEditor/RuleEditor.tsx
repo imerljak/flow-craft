@@ -1,6 +1,6 @@
 import React from 'react';
 import { useForm, Controller, SubmitHandler } from 'react-hook-form';
-import { Rule, RuleType, UrlMatcherType, HeaderModification, QueryParamModification, ScriptInjection } from '@shared/types';
+import { Rule, RuleType, UrlMatcherType, HeaderModification, QueryParamModification, ScriptInjection, MockResponse } from '@shared/types';
 import { generateId, isValidUrl, isValidRegex } from '@shared/utils';
 import { DEFAULT_RULE_PRIORITY } from '@shared/constants';
 import { Button } from '../Button';
@@ -8,6 +8,7 @@ import { Input } from '../Input';
 import { HeaderEditor } from './HeaderEditor';
 import { QueryParamEditor } from './QueryParamEditor';
 import { ScriptInjectionEditor } from './ScriptInjectionEditor';
+import { MockResponseEditor } from './MockResponseEditor';
 
 export interface RuleEditorProps {
   rule?: Rule;
@@ -26,6 +27,7 @@ interface RuleFormData {
   headers: HeaderModification[];
   params: QueryParamModification[];
   script: ScriptInjection;
+  mockResponse: MockResponse;
 }
 
 /**
@@ -50,6 +52,7 @@ export const RuleEditor: React.FC<RuleEditorProps> = ({ rule, onSave, onCancel }
       headers: rule?.action.type === RuleType.HEADER_MODIFICATION ? rule.action.headers : [],
       params: rule?.action.type === RuleType.QUERY_PARAM ? rule.action.params : [],
       script: rule?.action.type === RuleType.SCRIPT_INJECTION ? rule.action.script : { code: '', runAt: 'document_end' },
+      mockResponse: rule?.action.type === RuleType.MOCK_RESPONSE ? rule.action.mockResponse : { statusCode: 200, headers: {} },
     },
     mode: 'onSubmit',
   });
@@ -94,10 +97,7 @@ export const RuleEditor: React.FC<RuleEditorProps> = ({ rule, onSave, onCancel }
       case RuleType.MOCK_RESPONSE:
         action = {
           type: RuleType.MOCK_RESPONSE,
-          mockResponse: {
-            statusCode: 200,
-            headers: {},
-          },
+          mockResponse: data.mockResponse,
         };
         break;
       default:
@@ -307,6 +307,24 @@ export const RuleEditor: React.FC<RuleEditorProps> = ({ rule, onSave, onCancel }
             render={({ field }) => (
               <ScriptInjectionEditor
                 script={field.value}
+                onChange={field.onChange}
+              />
+            )}
+          />
+        </div>
+      )}
+
+      {watchedRuleType === RuleType.MOCK_RESPONSE && (
+        <div>
+          <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
+            Mock Response
+          </label>
+          <Controller
+            control={control}
+            name="mockResponse"
+            render={({ field }) => (
+              <MockResponseEditor
+                mockResponse={field.value}
                 onChange={field.onChange}
               />
             )}

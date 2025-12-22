@@ -60,17 +60,22 @@ This document tracks known issues, limitations, and workarounds in FlowCraft.
 
 ## Features
 
-### Not Yet Implemented
+### Partially Implemented
 
-The following features from the original specification are planned but not yet implemented:
+The following feature has UI complete but requires additional backend work:
 
-1. **Response Mocking** - Requires content scripts and webRequest API
-2. **Script Injection** - Requires content scripts
-3. **Query Parameter Modification** - Requires advanced URL rewriting
+1. **Response Mocking** - UI is complete, but full functionality requires content scripts to intercept fetch requests. Chrome's declarativeNetRequest API does not support response mocking in Manifest V3. The ResponseMocker class is prepared for future implementation via content scripts that intercept fetch() calls.
 
-**Status:** Planned for future releases
+**Status:** UI complete, backend requires content script integration
 
 **Tracking:** See CHANGELOG.md "Upcoming Features" section
+
+### Recently Implemented
+
+The following features have been fully implemented:
+
+1. **Query Parameter Modification** ✅ - Uses declarativeNetRequest redirect with queryTransform
+2. **Script Injection** ✅ - Uses Chrome scripting API with webNavigation listeners
 
 ## Performance
 
