@@ -43,9 +43,6 @@ test.describe('FlowCraft - Data Persistence', () => {
     await page.selectOption('select#rule-type', { value: 'request_block' });
     await page.click('button:has-text("Save Rule")');
 
-    // Wait for save
-    await page.waitForTimeout(1000);
-
     // Verify rule is there
     await expect(page.locator('text=Persistent Rule')).toBeVisible();
 
@@ -70,7 +67,6 @@ test.describe('FlowCraft - Data Persistence', () => {
     await optionsPage.fill('input[placeholder*="api.example.com"]', 'https://popup.com');
     await optionsPage.selectOption('select#rule-type', { value: 'header_modification' });
     await optionsPage.click('button:has-text("Save Rule")');
-    await optionsPage.waitForTimeout(1000);
     await optionsPage.close();
 
     // Open popup
@@ -94,13 +90,11 @@ test.describe('FlowCraft - Data Persistence', () => {
     await page.fill('input[placeholder*="api.example.com"]', 'https://example.com');
     await page.selectOption('select#rule-type', { value: 'request_block' });
     await page.click('button:has-text("Save Rule")');
-    await page.waitForTimeout(1000);
 
     // Disable the rule via toggle in table
     const ruleRow = page.locator('tr:has-text("Toggle Persist")');
     const toggleButton = ruleRow.locator('button').first();
     await toggleButton.click();
-    await page.waitForTimeout(500);
 
     // Close and reopen
     await page.close();
@@ -156,7 +150,6 @@ test.describe('FlowCraft - Data Persistence', () => {
     await page.fill('input[placeholder*="api.example.com"]', 'https://headers.com');
     await page.selectOption('select#rule-type', { value: 'header_modification' });
     await page.click('button:has-text("Save Rule")');
-    await page.waitForTimeout(1000);
 
     await page.close();
 
@@ -187,7 +180,6 @@ test.describe('FlowCraft - Data Persistence', () => {
     await page.fill('input[placeholder*="new.example.com"]', 'https://new.com');
 
     await page.click('button:has-text("Save Rule")');
-    await page.waitForTimeout(1000);
 
     await page.close();
 
@@ -215,7 +207,6 @@ test.describe('FlowCraft - Data Persistence', () => {
     await page.fill('input[placeholder*="CORS"]', 'Integrity Test');
     await page.fill('input[placeholder*="api.example.com"]', 'https://integrity.com');
     await page.click('button:has-text("Save Rule")');
-    await page.waitForTimeout(1000);
 
     // Get the rule ID from storage
     let rules = await ExtensionUtils.getRules(page);
@@ -233,12 +224,10 @@ test.describe('FlowCraft - Data Persistence', () => {
     await nameInput.clear();
     await nameInput.fill('Integrity Updated');
     await page.click('button:has-text("Save Rule")');
-    await page.waitForTimeout(1000);
 
     // Toggle off
     const updatedRow = page.locator('tr:has-text("Integrity Updated")');
     await updatedRow.locator('button').first().click();
-    await page.waitForTimeout(500);
 
     // Close and reopen
     await page.close();
@@ -263,7 +252,7 @@ test.describe('FlowCraft - Data Persistence', () => {
     await page.fill('input[placeholder*="CORS"]', 'Storage Verify');
     await page.fill('input[placeholder*="api.example.com"]', 'https://storage.com');
     await page.click('button:has-text("Save Rule")');
-    await page.waitForTimeout(1000);
+    await expect(page.getByTestId('rule-editor-drawer')).not.toBeVisible();
 
     // Directly check storage
     const rules = await ExtensionUtils.getRules(page);

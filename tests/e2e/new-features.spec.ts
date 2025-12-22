@@ -51,12 +51,8 @@ test.describe('FlowCraft - New Features (Query Params, Script Injection, Respons
       // Select query param type
       await page.selectOption('select#rule-type', { value: 'query_param' });
 
-      // Wait for query param editor to appear
-      await page.waitForTimeout(500);
-
       // Add a query parameter
       await page.click('button:has-text("Add Parameter")');
-
       // Fill in parameter details
       const paramRows = page.locator('[data-testid^="param-row-"]');
       const firstRow = paramRows.first();
@@ -72,7 +68,6 @@ test.describe('FlowCraft - New Features (Query Params, Script Injection, Respons
 
       // Save rule
       await page.locator('button:has-text("Save Rule")').click();
-      await page.waitForTimeout(1000);
 
       // Verify rule appears
       await expect(page.locator('text=Add Query Param Rule')).toBeVisible();
@@ -98,7 +93,6 @@ test.describe('FlowCraft - New Features (Query Params, Script Injection, Respons
       await page.fill('input[placeholder*="CORS"]', 'Remove Tracking Params');
       await page.fill('input[placeholder*="api.example.com"]', 'https://example.com/*');
       await page.selectOption('select#rule-type', { value: 'query_param' });
-      await page.waitForTimeout(500);
 
       // Add remove parameter
       await page.click('button:has-text("Add Parameter")');
@@ -109,7 +103,6 @@ test.describe('FlowCraft - New Features (Query Params, Script Injection, Respons
       await firstRow.locator('input[placeholder="Parameter name"]').fill('fbclid');
 
       await page.locator('button:has-text("Save Rule")').click();
-      await page.waitForTimeout(1000);
 
       await expect(page.locator('text=Remove Tracking Params')).toBeVisible();
 
@@ -131,7 +124,6 @@ test.describe('FlowCraft - New Features (Query Params, Script Injection, Respons
       await page.fill('input[placeholder*="CORS"]', 'Multi Query Params');
       await page.fill('input[placeholder*="api.example.com"]', 'https://example.com/api');
       await page.selectOption('select#rule-type', { value: 'query_param' });
-      await page.waitForTimeout(500);
 
       // Add first parameter (add)
       await page.click('button:has-text("Add Parameter")');
@@ -157,7 +149,7 @@ test.describe('FlowCraft - New Features (Query Params, Script Injection, Respons
       await row3.locator('input[placeholder="Parameter name"]').fill('tracking');
 
       await page.locator('button:has-text("Save Rule")').click();
-      await page.waitForTimeout(1000);
+      await expect(page.getByTestId('rule-editor-drawer')).not.toBeVisible();
 
       const rules = await ExtensionUtils.getRules(page);
       if (rules[0]?.action.type === 'query_param') {
@@ -177,7 +169,6 @@ test.describe('FlowCraft - New Features (Query Params, Script Injection, Respons
       await page.fill('input[placeholder*="api.example.com"]', 'https://example.com');
 
       await page.selectOption('select#rule-type', { value: 'script_injection' });
-      await page.waitForTimeout(500);
 
       // Verify script injection editor appears
       await expect(page.locator('text=Injection Timing').first()).toBeVisible();
@@ -195,7 +186,6 @@ test.describe('FlowCraft - New Features (Query Params, Script Injection, Respons
       await expect(page.locator('text=Security Warning')).toBeVisible();
 
       await page.locator('button:has-text("Save Rule")').click();
-      await page.waitForTimeout(1000);
 
       await expect(page.locator('text=Console Log Script')).toBeVisible();
 
@@ -216,7 +206,6 @@ test.describe('FlowCraft - New Features (Query Params, Script Injection, Respons
       await page.fill('input[placeholder*="CORS"]', 'Early Script');
       await page.fill('input[placeholder*="api.example.com"]', 'https://example.com');
       await page.selectOption('select#rule-type', { value: 'script_injection' });
-      await page.waitForTimeout(500);
 
       // Select document_start
       const timingSelect = page.locator('select').filter({ hasText: /Document/ });
@@ -226,7 +215,7 @@ test.describe('FlowCraft - New Features (Query Params, Script Injection, Respons
       await codeTextarea.fill('console.log("Early injection");');
 
       await page.locator('button:has-text("Save Rule")').click();
-      await page.waitForTimeout(1000);
+      await expect(page.getByTestId('rule-editor-drawer')).not.toBeVisible();
 
       const rules = await ExtensionUtils.getRules(page);
       if (rules[0]?.action.type === 'script_injection') {
@@ -244,13 +233,12 @@ test.describe('FlowCraft - New Features (Query Params, Script Injection, Respons
       await page.fill('input[placeholder*="CORS"]', 'Persist Script');
       await page.fill('input[placeholder*="api.example.com"]', 'https://test.com');
       await page.selectOption('select#rule-type', { value: 'script_injection' });
-      await page.waitForTimeout(500);
 
       const codeTextarea = page.locator('textarea[placeholder*="Enter JavaScript"]');
       await codeTextarea.fill('alert("test");');
 
       await page.locator('button:has-text("Save Rule")').click();
-      await page.waitForTimeout(1000);
+      await expect(page.getByTestId('rule-editor-drawer')).not.toBeVisible();
 
       // Get rule ID and edit
       const rules = await ExtensionUtils.getRules(page);
@@ -278,7 +266,6 @@ test.describe('FlowCraft - New Features (Query Params, Script Injection, Respons
       await page.fill('input[placeholder*="api.example.com"]', 'https://api.example.com/test');
 
       await page.selectOption('select#rule-type', { value: 'mock_response' });
-      await page.waitForTimeout(500);
 
       // Verify mock response editor appears
       await expect(page.locator('label:has-text("Status Code")').first()).toBeVisible();
@@ -293,7 +280,6 @@ test.describe('FlowCraft - New Features (Query Params, Script Injection, Respons
       await statusTextInput.fill('Not Found');
 
       await page.locator('button:has-text("Save Rule")').click();
-      await page.waitForTimeout(1000);
 
       await expect(page.locator('text=Mock 404 Response')).toBeVisible();
 
@@ -314,7 +300,6 @@ test.describe('FlowCraft - New Features (Query Params, Script Injection, Respons
       await page.fill('input[placeholder*="CORS"]', 'Mock with Headers');
       await page.fill('input[placeholder*="api.example.com"]', 'https://api.example.com/data');
       await page.selectOption('select#rule-type', { value: 'mock_response' });
-      await page.waitForTimeout(500);
 
       // Add header
       await expect(page.locator('text=Response Headers')).toBeVisible();
@@ -326,13 +311,12 @@ test.describe('FlowCraft - New Features (Query Params, Script Injection, Respons
       await headerValueInput.fill('application/json');
 
       await page.click('button:has-text("Add")');
-      await page.waitForTimeout(300);
 
       // Verify header appears in list
       await expect(page.locator('text=Content-Type: application/json')).toBeVisible();
 
       await page.locator('button:has-text("Save Rule")').click();
-      await page.waitForTimeout(1000);
+      await expect(page.getByTestId('rule-editor-drawer')).not.toBeVisible();
 
       const rules = await ExtensionUtils.getRules(page);
       if (rules[0]?.action.type === 'mock_response') {
@@ -349,7 +333,6 @@ test.describe('FlowCraft - New Features (Query Params, Script Injection, Respons
       await page.fill('input[placeholder*="CORS"]', 'Mock JSON Response');
       await page.fill('input[placeholder*="api.example.com"]', 'https://api.example.com/users');
       await page.selectOption('select#rule-type', { value: 'mock_response' });
-      await page.waitForTimeout(500);
 
       // Set response body
       const bodyTextarea = page.locator('textarea[placeholder*="message"]');
@@ -357,7 +340,7 @@ test.describe('FlowCraft - New Features (Query Params, Script Injection, Respons
       await bodyTextarea.fill(mockBody);
 
       await page.locator('button:has-text("Save Rule")').click();
-      await page.waitForTimeout(1000);
+      await expect(page.getByTestId('rule-editor-drawer')).not.toBeVisible();
 
       const rules = await ExtensionUtils.getRules(page);
       if (rules[0]?.action.type === 'mock_response') {
@@ -374,14 +357,13 @@ test.describe('FlowCraft - New Features (Query Params, Script Injection, Respons
       await page.fill('input[placeholder*="CORS"]', 'Delayed Response');
       await page.fill('input[placeholder*="api.example.com"]', 'https://slow-api.com');
       await page.selectOption('select#rule-type', { value: 'mock_response' });
-      await page.waitForTimeout(500);
 
       // Set delay
       const delayInput = page.locator('input[placeholder="0"]').last();
       await delayInput.fill('2000');
 
       await page.locator('button:has-text("Save Rule")').click();
-      await page.waitForTimeout(1000);
+      await expect(page.getByTestId('rule-editor-drawer')).not.toBeVisible();
 
       const rules = await ExtensionUtils.getRules(page);
       if (rules[0]?.action.type === 'mock_response') {
@@ -396,7 +378,6 @@ test.describe('FlowCraft - New Features (Query Params, Script Injection, Respons
 
       await page.click('button:has-text("+ New Rule")');
       await page.selectOption('select#rule-type', { value: 'mock_response' });
-      await page.waitForTimeout(500);
 
       // Verify info note is visible
       await expect(page.locator('text=Note:')).toBeVisible();
@@ -425,7 +406,6 @@ test.describe('FlowCraft - New Features (Query Params, Script Injection, Respons
       await page.fill('input[placeholder*="CORS"]', 'Script Rule');
       await page.fill('input[placeholder*="api.example.com"]', 'https://s.com');
       await page.selectOption('select#rule-type', { value: 'script_injection' });
-      await page.waitForTimeout(500);
       const codeTextarea = page.locator('textarea[placeholder*="Enter JavaScript"]');
       await codeTextarea.fill('console.log("test");');
       await page.locator('button:has-text("Save Rule")').click();
@@ -476,7 +456,6 @@ test.describe('FlowCraft - New Features (Query Params, Script Injection, Respons
       await page.fill('input[placeholder*="CORS"]', 'Icon Test Script');
       await page.fill('input[placeholder*="api.example.com"]', 'https://test2.com');
       await page.selectOption('select#rule-type', { value: 'script_injection' });
-      await page.waitForTimeout(500);
       const codeTextarea = page.locator('textarea[placeholder*="Enter JavaScript"]');
       await codeTextarea.fill('test');
       await page.locator('button:has-text("Save Rule")').click();

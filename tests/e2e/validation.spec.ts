@@ -93,7 +93,6 @@ test.describe('FlowCraft - Form Validation (Options Page)', () => {
     await page.selectOption('select#rule-type', { value: 'request_block' });
 
     await page.click('button:has-text("Save Rule")');
-    await page.waitForTimeout(1000);
 
     // Should save successfully - rule appears in table
     await expect(page.locator('text=Test Rule')).toBeVisible();
@@ -112,7 +111,6 @@ test.describe('FlowCraft - Form Validation (Options Page)', () => {
     await page.selectOption('select#rule-type', { value: 'request_block' });
 
     await page.click('button:has-text("Save Rule")');
-    await page.waitForTimeout(1000);
 
     await expect(page.locator('text=Wildcard Rule')).toBeVisible();
 
@@ -149,7 +147,6 @@ test.describe('FlowCraft - Form Validation (Options Page)', () => {
     await page.selectOption('select#rule-type', { value: 'request_block' });
 
     await page.click('button:has-text("Save Rule")');
-    await page.waitForTimeout(1000);
 
     await expect(page.locator('text=Regex Rule')).toBeVisible();
 
@@ -187,7 +184,6 @@ test.describe('FlowCraft - Form Validation (Options Page)', () => {
     await page.fill('input[placeholder*="CORS"]', 'Test Rule');
 
     // Error should disappear (react-hook-form clears errors on input change)
-    await page.waitForTimeout(300);
     await expect(page.locator('text=Rule name is required')).not.toBeVisible();
 
     await page.close();
@@ -210,7 +206,6 @@ test.describe('FlowCraft - Form Validation (Options Page)', () => {
     }
 
     await page.click('button:has-text("Save Rule")');
-    await page.waitForTimeout(1000);
 
     await expect(page.locator('text=Priority Test')).toBeVisible();
 

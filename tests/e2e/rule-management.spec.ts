@@ -71,9 +71,6 @@ test.describe('FlowCraft - Rule Management (Options Page)', () => {
     // Save rule
     await page.click('button:has-text("Save Rule")');
 
-    // Wait for modal to close and rule to appear in table
-    await page.waitForTimeout(1000);
-
     // Verify rule appears in the table
     await expect(page.locator('text=Test Header Rule')).toBeVisible({ timeout: 3000 });
 
@@ -110,9 +107,6 @@ test.describe('FlowCraft - Rule Management (Options Page)', () => {
     // Save rule
     await page.click('button:has-text("Save Rule")');
 
-    // Wait for modal to close
-    await page.waitForTimeout(1000);
-
     // Verify rule appears
     await expect(page.locator('text=Redirect Rule')).toBeVisible({ timeout: 3000 });
 
@@ -143,9 +137,6 @@ test.describe('FlowCraft - Rule Management (Options Page)', () => {
     // Save rule
     await page.click('button:has-text("Save Rule")');
 
-    // Wait for modal to close
-    await page.waitForTimeout(1000);
-
     // Verify rule appears
     await expect(page.locator('text=Block Rule')).toBeVisible({ timeout: 3000 });
 
@@ -163,7 +154,6 @@ test.describe('FlowCraft - Rule Management (Options Page)', () => {
     await page.fill('input[placeholder*="CORS"]', 'Toggle Test Rule');
     await page.fill('input[placeholder*="api.example.com"]', 'https://test.com');
     await page.click('button:has-text("Save Rule")');
-    await page.waitForTimeout(1000);
 
     // Find the rule row
     const ruleRow = page.locator('tr:has-text("Toggle Test Rule")');
@@ -173,12 +163,8 @@ test.describe('FlowCraft - Rule Management (Options Page)', () => {
     const toggleButton = ruleRow.locator('button').first();
     await toggleButton.click();
 
-    // Wait for state to update
-    await page.waitForTimeout(500);
-
     // Toggle back on
     await toggleButton.click();
-    await page.waitForTimeout(500);
 
     await page.close();
   });
@@ -191,7 +177,6 @@ test.describe('FlowCraft - Rule Management (Options Page)', () => {
     await page.fill('input[placeholder*="CORS"]', 'Rule to Delete');
     await page.fill('input[placeholder*="api.example.com"]', 'https://delete.com');
     await page.click('button:has-text("Save Rule")');
-    await page.waitForTimeout(1000);
 
     // Verify rule exists
     await expect(page.locator('text=Rule to Delete')).toBeVisible();
@@ -207,9 +192,6 @@ test.describe('FlowCraft - Rule Management (Options Page)', () => {
     // Wait for confirmation modal and confirm deletion
     await expect(page.getByTestId('delete-confirm-modal')).toBeVisible({ timeout: 2000 });
     await page.getByTestId('delete-confirm-btn').click();
-
-    // Wait for modal to close
-    await page.waitForTimeout(1000);
 
     // Verify rule is gone
     await expect(page.locator('text=Rule to Delete')).not.toBeVisible();
@@ -228,7 +210,6 @@ test.describe('FlowCraft - Rule Management (Options Page)', () => {
     await page.fill('input[placeholder*="CORS"]', 'Original Name');
     await page.fill('input[placeholder*="api.example.com"]', 'https://original.com');
     await page.click('button:has-text("Save Rule")');
-    await page.waitForTimeout(1000);
 
     // Get the rule ID from storage
     const rules = await ExtensionUtils.getRules(page);
@@ -248,7 +229,6 @@ test.describe('FlowCraft - Rule Management (Options Page)', () => {
 
     // Save changes
     await page.click('button:has-text("Save Rule")');
-    await page.waitForTimeout(1000);
 
     // Verify updated name appears
     await expect(page.locator('text=Updated Name')).toBeVisible();
