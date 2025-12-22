@@ -69,7 +69,7 @@ describe('MockResponseEditor', () => {
 
       expect(mockOnChange).toHaveBeenCalled();
       const lastCall = mockOnChange.mock.calls[mockOnChange.mock.calls.length - 1];
-      expect(lastCall[0].statusCode).toBe(404);
+      expect(lastCall?.[0].statusCode).toBe(404);
     });
   });
 
@@ -95,7 +95,7 @@ describe('MockResponseEditor', () => {
 
       expect(mockOnChange).toHaveBeenCalled();
       const lastCall = mockOnChange.mock.calls[mockOnChange.mock.calls.length - 1];
-      expect(lastCall[0].statusText).toBe('Custom Status');
+      expect(lastCall?.[0].statusText).toBe('Custom Status');
     });
   });
 
@@ -121,7 +121,7 @@ describe('MockResponseEditor', () => {
 
       expect(mockOnChange).toHaveBeenCalled();
       const lastCall = mockOnChange.mock.calls[mockOnChange.mock.calls.length - 1];
-      expect(lastCall[0].body).toBe('test body');
+      expect(lastCall?.[0].body).toBe('test body');
     });
   });
 
@@ -147,7 +147,7 @@ describe('MockResponseEditor', () => {
 
       expect(mockOnChange).toHaveBeenCalled();
       const lastCall = mockOnChange.mock.calls[mockOnChange.mock.calls.length - 1];
-      expect(lastCall[0].delay).toBe(500);
+      expect(lastCall?.[0].delay).toBe(500);
     });
   });
 
@@ -188,7 +188,6 @@ describe('MockResponseEditor', () => {
     });
 
     it('should not add header if name is empty', async () => {
-      const user = userEvent.setup();
       render(<MockResponseEditor mockResponse={defaultMockResponse} onChange={mockOnChange} />);
 
       const addButton = screen.getByRole('button', { name: /add/i });

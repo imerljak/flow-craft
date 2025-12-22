@@ -238,8 +238,8 @@ test.describe('FlowCraft - Rule Management (Options Page)', () => {
     // Click edit button using test ID
     await page.getByTestId(`edit-rule-${ruleToEdit!.id}`).click();
 
-    // Wait for edit modal to open
-    await expect(page.getByTestId('rule-editor-modal')).toBeVisible({ timeout: 3000 });
+    // Wait for edit drawer to open
+    await expect(page.getByTestId('rule-editor-drawer')).toBeVisible({ timeout: 3000 });
 
     // Find and change the name input
     const nameInput = page.locator('input[placeholder*="CORS"]');

@@ -135,7 +135,7 @@ describe('QueryParamEditor', () => {
 
       render(<QueryParamEditor params={params} onChange={mockOnChange} />);
 
-      const nameInput = screen.getByPlaceholderText(/e\.g\., utm_source/i);
+      const nameInput = screen.getByPlaceholderText(/Parameter name/i);
       await user.type(nameInput, 'X');
 
       expect(mockOnChange).toHaveBeenCalled();
@@ -149,7 +149,7 @@ describe('QueryParamEditor', () => {
 
       render(<QueryParamEditor params={params} onChange={mockOnChange} />);
 
-      const valueInput = screen.getByPlaceholderText(/e\.g\., google/i);
+      const valueInput = screen.getByPlaceholderText(/Parameter value/i);
       await user.type(valueInput, 'X');
 
       expect(mockOnChange).toHaveBeenCalled();
@@ -162,7 +162,7 @@ describe('QueryParamEditor', () => {
 
       render(<QueryParamEditor params={params} onChange={mockOnChange} />);
 
-      expect(screen.getByPlaceholderText(/e\.g\., google/i)).toBeInTheDocument();
+      expect(screen.getByPlaceholderText(/Parameter value/i)).toBeInTheDocument();
     });
 
     it('should show value input for modify operation', () => {
@@ -170,7 +170,7 @@ describe('QueryParamEditor', () => {
 
       render(<QueryParamEditor params={params} onChange={mockOnChange} />);
 
-      expect(screen.getByPlaceholderText(/e\.g\., google/i)).toBeInTheDocument();
+      expect(screen.getByPlaceholderText(/Parameter value/i)).toBeInTheDocument();
     });
 
     it('should NOT show value input for remove operation', () => {
@@ -178,7 +178,7 @@ describe('QueryParamEditor', () => {
 
       render(<QueryParamEditor params={params} onChange={mockOnChange} />);
 
-      expect(screen.queryByPlaceholderText(/e\.g\., google/i)).not.toBeInTheDocument();
+      expect(screen.queryByPlaceholderText(/Parameter value/i)).not.toBeInTheDocument();
     });
   });
 

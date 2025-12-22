@@ -134,7 +134,7 @@ describe('ScriptInjectionEditor', () => {
 
       expect(mockOnChange).toHaveBeenCalled();
       const lastCall = mockOnChange.mock.calls[mockOnChange.mock.calls.length - 1];
-      expect(lastCall[0].runAt).toBe('document_start');
+      expect(lastCall?.[0].runAt).toBe('document_start');
     });
   });
 

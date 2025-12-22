@@ -51,6 +51,7 @@ export const QueryParamEditor = ({ params, onChange }: QueryParamEditorProps) =>
         params.map((param, index) => (
           <div
             key={index}
+            data-testid={`param-row-${index}`}
             className="flex gap-2 p-3 bg-neutral-50 dark:bg-neutral-800 rounded border border-neutral-200 dark:border-neutral-700"
           >
             <div className="flex-1 grid grid-cols-3 gap-2">
@@ -72,7 +73,7 @@ export const QueryParamEditor = ({ params, onChange }: QueryParamEditorProps) =>
                 type="text"
                 value={param.name}
                 onChange={(e) => handleUpdateParam(index, 'name', e.target.value)}
-                placeholder="e.g., utm_source"
+                placeholder="Parameter name"
                 className="px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded bg-white dark:bg-neutral-900 text-neutral-900 dark:text-neutral-100 placeholder-neutral-400 dark:placeholder-neutral-500 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
 
@@ -84,7 +85,7 @@ export const QueryParamEditor = ({ params, onChange }: QueryParamEditorProps) =>
                   onChange={(e) =>
                     handleUpdateParam(index, 'value', e.target.value)
                   }
-                  placeholder="e.g., google"
+                  placeholder="Parameter value"
                   className="px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded bg-white dark:bg-neutral-900 text-neutral-900 dark:text-neutral-100 placeholder-neutral-400 dark:placeholder-neutral-500 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               )}

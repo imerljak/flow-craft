@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Rule } from '@shared/types';
 import { Storage } from '@storage/index';
 import { Modal } from '@components/Modal';
+import { Drawer } from '@components/Drawer/Drawer';
 import { RuleEditor } from '@components/RuleEditor';
 import { Button } from '@components/Button';
 
@@ -320,16 +321,15 @@ const App: React.FC = () => {
         )}
       </main>
 
-      {/* Rule Editor Modal */}
-      <Modal
+      {/* Rule Editor Drawer */}
+      <Drawer
         isOpen={showEditor}
         onClose={handleCancelEdit}
         title={editingRule ? 'Edit Rule' : 'Create New Rule'}
-        size="lg"
-        testId="rule-editor-modal"
+        testId="rule-editor-drawer"
       >
         <RuleEditor rule={editingRule} onSave={handleSaveRule} onCancel={handleCancelEdit} />
-      </Modal>
+      </Drawer>
 
       {/* Delete Confirmation Modal */}
       <Modal

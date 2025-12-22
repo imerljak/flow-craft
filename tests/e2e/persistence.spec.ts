@@ -127,7 +127,7 @@ test.describe('FlowCraft - Data Persistence', () => {
       await page.fill('input[placeholder*="api.example.com"]', `https://example${i}.com`);
       await page.selectOption('select#rule-type', { value: 'request_block' });
       await page.click('button:has-text("Save Rule")');
-      await page.waitForTimeout(1000);
+      await expect(page.getByTestId('rule-editor-drawer')).not.toBeVisible({ timeout: 3000 });
     }
 
     await page.close();
@@ -225,8 +225,8 @@ test.describe('FlowCraft - Data Persistence', () => {
     // Click edit button using test ID
     await page.getByTestId(`edit-rule-${ruleToEdit!.id}`).click();
 
-    // Wait for edit modal to open
-    await expect(page.getByTestId('rule-editor-modal')).toBeVisible({ timeout: 3000 });
+    // Wait for edit drawer to open
+    await expect(page.getByTestId('rule-editor-drawer')).toBeVisible({ timeout: 3000 });
 
     // Find and change the name input
     const nameInput = page.locator('input[placeholder*="CORS"]');
