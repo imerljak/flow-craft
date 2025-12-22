@@ -93,11 +93,20 @@ export class RequestInterceptor {
           type: 'block' as DeclarativeNetRequest.RuleActionTypeEnum,
         };
 
+      case RuleType.QUERY_PARAM:
+        // Query param modifications are handled via redirect with modified URL
+        // The actual URL modification happens in the condition via transform
+        return {
+          type: 'redirect' as DeclarativeNetRequest.RuleActionTypeEnum,
+          redirect: {
+            transform: this.buildQueryParamTransform(rule),
+          },
+        };
+
       // Mock response and script injection are not supported by declarativeNetRequest
       // These will need to be handled differently (content scripts, webRequest API, etc.)
       case RuleType.MOCK_RESPONSE:
       case RuleType.SCRIPT_INJECTION:
-      case RuleType.QUERY_PARAM:
         return null;
 
       default:
@@ -158,6 +167,42 @@ export class RequestInterceptor {
       default:
         return 'set';
     }
+  }
+
+  /**
+   * Build query parameter transform for URL modification
+   */
+  private static buildQueryParamTransform(
+    rule: Rule
+  ): DeclarativeNetRequest.URLTransform {
+    if (rule.action.type !== RuleType.QUERY_PARAM) {
+      throw new Error('Invalid rule type for query parameter modification');
+    }
+
+    const addOrReplaceParams: Array<{ key: string; value: string }> = [];
+    const removeParams: string[] = [];
+
+    for (const param of rule.action.params) {
+      if (param.operation === 'remove') {
+        removeParams.push(param.name);
+      } else if (param.operation === 'add' || param.operation === 'modify') {
+        if (param.value !== undefined) {
+          addOrReplaceParams.push({
+            key: param.name,
+            value: param.value,
+          });
+        }
+      }
+    }
+
+    const transform: DeclarativeNetRequest.URLTransform = {
+      queryTransform: {
+        addOrReplaceParams: addOrReplaceParams.length > 0 ? addOrReplaceParams : undefined,
+        removeParams: removeParams.length > 0 ? removeParams : undefined,
+      },
+    };
+
+    return transform;
   }
 
   /**

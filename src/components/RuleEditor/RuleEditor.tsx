@@ -1,11 +1,12 @@
 import React from 'react';
 import { useForm, Controller, SubmitHandler } from 'react-hook-form';
-import { Rule, RuleType, UrlMatcherType, HeaderModification } from '@shared/types';
+import { Rule, RuleType, UrlMatcherType, HeaderModification, QueryParamModification } from '@shared/types';
 import { generateId, isValidUrl, isValidRegex } from '@shared/utils';
 import { DEFAULT_RULE_PRIORITY } from '@shared/constants';
 import { Button } from '../Button';
 import { Input } from '../Input';
 import { HeaderEditor } from './HeaderEditor';
+import { QueryParamEditor } from './QueryParamEditor';
 
 export interface RuleEditorProps {
   rule?: Rule;
@@ -22,6 +23,7 @@ interface RuleFormData {
   priority: number | string;
   redirectUrl: string;
   headers: HeaderModification[];
+  params: QueryParamModification[];
 }
 
 /**
@@ -44,6 +46,7 @@ export const RuleEditor: React.FC<RuleEditorProps> = ({ rule, onSave, onCancel }
       priority: rule?.priority || DEFAULT_RULE_PRIORITY,
       redirectUrl: rule?.action.type === RuleType.URL_REDIRECT ? rule.action.redirectUrl : '',
       headers: rule?.action.type === RuleType.HEADER_MODIFICATION ? rule.action.headers : [],
+      params: rule?.action.type === RuleType.QUERY_PARAM ? rule.action.params : [],
     },
     mode: 'onSubmit',
   });
@@ -85,7 +88,7 @@ export const RuleEditor: React.FC<RuleEditorProps> = ({ rule, onSave, onCancel }
       case RuleType.QUERY_PARAM:
         action = {
           type: RuleType.QUERY_PARAM,
-          params: [],
+          params: data.params,
         };
         break;
       case RuleType.MOCK_RESPONSE:
@@ -268,6 +271,24 @@ export const RuleEditor: React.FC<RuleEditorProps> = ({ rule, onSave, onCancel }
             render={({ field }) => (
               <HeaderEditor
                 headers={field.value}
+                onChange={field.onChange}
+              />
+            )}
+          />
+        </div>
+      )}
+
+      {watchedRuleType === RuleType.QUERY_PARAM && (
+        <div>
+          <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
+            Query Parameters
+          </label>
+          <Controller
+            control={control}
+            name="params"
+            render={({ field }) => (
+              <QueryParamEditor
+                params={field.value}
                 onChange={field.onChange}
               />
             )}
