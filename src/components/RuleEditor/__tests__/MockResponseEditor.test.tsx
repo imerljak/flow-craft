@@ -24,7 +24,7 @@ describe('MockResponseEditor', () => {
       render(<MockResponseEditor mockResponse={defaultMockResponse} onChange={mockOnChange} />);
 
       expect(screen.getByText('Status Code')).toBeInTheDocument();
-      expect(screen.getByDisplayValue('200')).toBeInTheDocument();
+      expect(screen.getByTestId('status-code-input')).toBeInTheDocument();
     });
 
     it('should render status text input', () => {
@@ -56,14 +56,14 @@ describe('MockResponseEditor', () => {
     it('should display current status code', () => {
       render(<MockResponseEditor mockResponse={defaultMockResponse} onChange={mockOnChange} />);
 
-      expect(screen.getByDisplayValue('200')).toBeInTheDocument();
+      expect(screen.getByTestId('status-code-input')).toBeInTheDocument();
     });
 
     it('should call onChange when status code changes', async () => {
       const user = userEvent.setup();
       render(<MockResponseEditor mockResponse={defaultMockResponse} onChange={mockOnChange} />);
 
-      const input = screen.getByDisplayValue('200');
+      const input = screen.getByTestId('status-code-input');
       await user.tripleClick(input);
       await user.paste('404');
 
@@ -89,7 +89,7 @@ describe('MockResponseEditor', () => {
       const user = userEvent.setup();
       render(<MockResponseEditor mockResponse={defaultMockResponse} onChange={mockOnChange} />);
 
-      const input = screen.getByPlaceholderText('OK');
+      const input = screen.getByTestId('status-text-input');
       await user.click(input);
       await user.paste('Custom Status');
 
@@ -115,7 +115,7 @@ describe('MockResponseEditor', () => {
       const user = userEvent.setup();
       render(<MockResponseEditor mockResponse={defaultMockResponse} onChange={mockOnChange} />);
 
-      const textarea = screen.getByPlaceholderText(/{"message": "This is a mock response", "data": \[\]}/);
+      const textarea = screen.getByTestId('response-body-textarea');
       await user.click(textarea);
       await user.paste('test body');
 
@@ -141,7 +141,7 @@ describe('MockResponseEditor', () => {
       const user = userEvent.setup();
       render(<MockResponseEditor mockResponse={defaultMockResponse} onChange={mockOnChange} />);
 
-      const input = screen.getByPlaceholderText('0');
+      const input = screen.getByTestId('response-delay-input');
       await user.click(input);
       await user.paste('500');
 
@@ -171,9 +171,9 @@ describe('MockResponseEditor', () => {
       const user = userEvent.setup();
       render(<MockResponseEditor mockResponse={defaultMockResponse} onChange={mockOnChange} />);
 
-      const nameInput = screen.getByPlaceholderText(/header name/i);
-      const valueInput = screen.getByPlaceholderText(/header value/i);
-      const addButton = screen.getByRole('button', { name: /add/i });
+      const nameInput = screen.getByTestId('header-name-input');
+      const valueInput = screen.getByTestId('header-value-input');
+      const addButton = screen.getByTestId('add-header-btn');
 
       await user.type(nameInput, 'X-Test');
       await user.type(valueInput, 'test-value');
@@ -190,7 +190,7 @@ describe('MockResponseEditor', () => {
     it('should not add header if name is empty', async () => {
       render(<MockResponseEditor mockResponse={defaultMockResponse} onChange={mockOnChange} />);
 
-      const addButton = screen.getByRole('button', { name: /add/i });
+      const addButton = screen.getByTestId('add-header-btn');
       expect(addButton).toBeDisabled();
     });
 
@@ -218,17 +218,17 @@ describe('MockResponseEditor', () => {
       const user = userEvent.setup();
       render(<MockResponseEditor mockResponse={defaultMockResponse} onChange={mockOnChange} />);
 
-      const nameInput = screen.getByPlaceholderText(/header name/i);
-      const valueInput = screen.getByPlaceholderText(/header value/i);
-      const addButton = screen.getByRole('button', { name: /add/i });
+      const nameInput = screen.getByTestId('header-name-input');
+      const valueInput = screen.getByTestId('header-value-input');
+      const addButton = screen.getByTestId('add-header-btn');
 
       await user.type(nameInput, 'X-Test');
       await user.type(valueInput, 'test-value');
       await user.click(addButton);
 
       // Input fields should be cleared
-      expect(screen.getByPlaceholderText(/header name/i)).toHaveValue('');
-      expect(screen.getByPlaceholderText(/header value/i)).toHaveValue('');
+      expect(screen.getByTestId('header-name-input')).toHaveValue('');
+      expect(screen.getByTestId('header-value-input')).toHaveValue('');
     });
   });
 });

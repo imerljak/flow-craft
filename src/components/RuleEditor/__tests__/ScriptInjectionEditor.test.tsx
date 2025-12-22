@@ -24,13 +24,13 @@ describe('ScriptInjectionEditor', () => {
       render(<ScriptInjectionEditor script={defaultScript} onChange={mockOnChange} />);
 
       expect(screen.getByText(/injection timing/i)).toBeInTheDocument();
-      expect(screen.getByRole('combobox')).toBeInTheDocument();
+      expect(screen.getByTestId('script-timing-select')).toBeInTheDocument();
     });
 
     it('should render code textarea', () => {
       render(<ScriptInjectionEditor script={defaultScript} onChange={mockOnChange} />);
 
-      expect(screen.getByRole('textbox')).toBeInTheDocument();
+      expect(screen.getByTestId('script-code-textarea')).toBeInTheDocument();
       expect(screen.getByText('JavaScript Code')).toBeInTheDocument();
     });
 
@@ -53,7 +53,7 @@ describe('ScriptInjectionEditor', () => {
       const user = userEvent.setup();
       render(<ScriptInjectionEditor script={defaultScript} onChange={mockOnChange} />);
 
-      const select = screen.getByRole('combobox');
+      const select = screen.getByTestId('script-timing-select');
       await user.selectOptions(select, 'document_start');
 
       expect(mockOnChange).toHaveBeenCalledWith({
@@ -66,7 +66,7 @@ describe('ScriptInjectionEditor', () => {
       const user = userEvent.setup();
       render(<ScriptInjectionEditor script={defaultScript} onChange={mockOnChange} />);
 
-      const select = screen.getByRole('combobox');
+      const select = screen.getByTestId('script-timing-select');
       await user.selectOptions(select, 'document_idle');
 
       expect(mockOnChange).toHaveBeenCalledWith({
@@ -84,7 +84,7 @@ describe('ScriptInjectionEditor', () => {
 
       render(<ScriptInjectionEditor script={script} onChange={mockOnChange} />);
 
-      const select = screen.getByRole('combobox');
+      const select = screen.getByTestId('script-timing-select');
       await user.selectOptions(select, 'document_start');
 
       expect(mockOnChange).toHaveBeenCalledWith({
@@ -110,7 +110,7 @@ describe('ScriptInjectionEditor', () => {
       const user = userEvent.setup();
       render(<ScriptInjectionEditor script={defaultScript} onChange={mockOnChange} />);
 
-      const textarea = screen.getByRole('textbox');
+      const textarea = screen.getByTestId('script-code-textarea');
       await user.click(textarea);
       await user.paste('console.log("test");');
 
@@ -129,7 +129,7 @@ describe('ScriptInjectionEditor', () => {
 
       render(<ScriptInjectionEditor script={script} onChange={mockOnChange} />);
 
-      const textarea = screen.getByRole('textbox');
+      const textarea = screen.getByTestId('script-code-textarea');
       await user.type(textarea, 'X');
 
       expect(mockOnChange).toHaveBeenCalled();

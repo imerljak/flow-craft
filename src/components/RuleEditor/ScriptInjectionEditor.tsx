@@ -36,6 +36,7 @@ export const ScriptInjectionEditor = ({
           Injection Timing
         </label>
         <select
+          data-testid="script-timing-select"
           value={script.runAt}
           onChange={(e) =>
             handleRunAtChange(e.target.value as ScriptInjection['runAt'])
@@ -57,6 +58,7 @@ export const ScriptInjectionEditor = ({
           JavaScript Code
         </label>
         <textarea
+          data-testid="script-code-textarea"
           value={script.code}
           onChange={(e) => handleCodeChange(e.target.value)}
           placeholder="// Enter JavaScript code to inject

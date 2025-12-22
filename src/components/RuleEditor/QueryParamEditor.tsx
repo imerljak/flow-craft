@@ -57,6 +57,7 @@ export const QueryParamEditor = ({ params, onChange }: QueryParamEditorProps) =>
             <div className="flex-1 grid grid-cols-3 gap-2">
               {/* Operation */}
               <select
+                data-testid={`param-operation-${index}`}
                 value={param.operation}
                 onChange={(e) =>
                   handleUpdateParam(index, 'operation', e.target.value)
@@ -70,6 +71,7 @@ export const QueryParamEditor = ({ params, onChange }: QueryParamEditorProps) =>
 
               {/* Name */}
               <input
+                data-testid={`param-name-${index}`}
                 type="text"
                 value={param.name}
                 onChange={(e) => handleUpdateParam(index, 'name', e.target.value)}
@@ -80,6 +82,7 @@ export const QueryParamEditor = ({ params, onChange }: QueryParamEditorProps) =>
               {/* Value - only for add/modify operations */}
               {param.operation !== 'remove' && (
                 <input
+                  data-testid={`param-value-${index}`}
                   type="text"
                   value={param.value || ''}
                   onChange={(e) =>
@@ -104,7 +107,7 @@ export const QueryParamEditor = ({ params, onChange }: QueryParamEditorProps) =>
         ))
       )}
 
-      <Button type="button" variant="secondary" onClick={handleAddParam}>
+      <Button type="button" variant="secondary" onClick={handleAddParam} data-testid="add-param-btn">
         Add Parameter
       </Button>
     </div>

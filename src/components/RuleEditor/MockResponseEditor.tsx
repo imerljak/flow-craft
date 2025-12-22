@@ -79,6 +79,7 @@ export const MockResponseEditor = ({
       <div className="grid grid-cols-2 gap-4">
         <div>
           <Input
+            data-testid="status-code-input"
             label="Status Code"
             type="number"
             value={mockResponse.statusCode.toString()}
@@ -94,6 +95,7 @@ export const MockResponseEditor = ({
 
         <div>
           <Input
+            data-testid="status-text-input"
             label="Status Text (Optional)"
             value={mockResponse.statusText || ''}
             onChange={(e) => handleStatusTextChange(e.target.value)}
@@ -138,6 +140,7 @@ export const MockResponseEditor = ({
         {/* Add New Header */}
         <div className="flex gap-2">
           <input
+            data-testid="header-name-input"
             type="text"
             value={newHeaderName}
             onChange={(e) => setNewHeaderName(e.target.value)}
@@ -145,6 +148,7 @@ export const MockResponseEditor = ({
             className="flex-1 px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded bg-white dark:bg-neutral-900 text-neutral-900 dark:text-neutral-100 placeholder-neutral-400 dark:placeholder-neutral-500 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
           <input
+            data-testid="header-value-input"
             type="text"
             value={newHeaderValue}
             onChange={(e) => setNewHeaderValue(e.target.value)}
@@ -152,6 +156,7 @@ export const MockResponseEditor = ({
             className="flex-1 px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded bg-white dark:bg-neutral-900 text-neutral-900 dark:text-neutral-100 placeholder-neutral-400 dark:placeholder-neutral-500 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
           <button
+            data-testid="add-header-btn"
             type="button"
             onClick={handleAddHeader}
             disabled={!newHeaderName || !newHeaderValue}
@@ -168,6 +173,7 @@ export const MockResponseEditor = ({
           Response Body (Optional)
         </label>
         <textarea
+          data-testid="response-body-textarea"
           value={mockResponse.body || ''}
           onChange={(e) => handleBodyChange(e.target.value)}
           placeholder='{"message": "This is a mock response", "data": []}'
@@ -182,6 +188,7 @@ export const MockResponseEditor = ({
       {/* Delay */}
       <div>
         <Input
+          data-testid="response-delay-input"
           label="Response Delay (Optional)"
           type="number"
           value={mockResponse.delay?.toString() || ''}
