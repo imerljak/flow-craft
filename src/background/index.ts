@@ -5,6 +5,7 @@
 
 import { Storage } from '@storage/index';
 import { RequestInterceptor } from './requestInterceptor';
+import { ScriptInjector } from './scriptInjector';
 import browser from 'webextension-polyfill';
 import { Rule } from '@shared/types';
 
@@ -25,12 +26,13 @@ async function initializeExtension(): Promise<void> {
 }
 
 /**
- * Sync rules from storage to Chrome's declarativeNetRequest
+ * Sync rules from storage to Chrome's declarativeNetRequest and ScriptInjector
  */
 async function syncRules(): Promise<void> {
   try {
     const rules = await Storage.getRules();
     await RequestInterceptor.updateDynamicRules(rules);
+    await ScriptInjector.updateScriptRules(rules);
   } catch (error) {
     console.error('Failed to sync rules:', error);
   }
@@ -95,4 +97,12 @@ browser.runtime.onMessage.addListener((message: unknown, _sender, sendResponse):
 
   // Return true to indicate we'll send a response asynchronously
   return true;
+});
+
+// Listen for page navigation to inject scripts
+browser.webNavigation.onCommitted.addListener((details) => {
+  if (details.frameId === 0) {
+    // Only handle main frame navigation
+    void ScriptInjector.handleNavigation(details.tabId, details.url);
+  }
 });

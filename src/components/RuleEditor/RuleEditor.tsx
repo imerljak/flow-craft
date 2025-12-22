@@ -1,12 +1,13 @@
 import React from 'react';
 import { useForm, Controller, SubmitHandler } from 'react-hook-form';
-import { Rule, RuleType, UrlMatcherType, HeaderModification, QueryParamModification } from '@shared/types';
+import { Rule, RuleType, UrlMatcherType, HeaderModification, QueryParamModification, ScriptInjection } from '@shared/types';
 import { generateId, isValidUrl, isValidRegex } from '@shared/utils';
 import { DEFAULT_RULE_PRIORITY } from '@shared/constants';
 import { Button } from '../Button';
 import { Input } from '../Input';
 import { HeaderEditor } from './HeaderEditor';
 import { QueryParamEditor } from './QueryParamEditor';
+import { ScriptInjectionEditor } from './ScriptInjectionEditor';
 
 export interface RuleEditorProps {
   rule?: Rule;
@@ -24,6 +25,7 @@ interface RuleFormData {
   redirectUrl: string;
   headers: HeaderModification[];
   params: QueryParamModification[];
+  script: ScriptInjection;
 }
 
 /**
@@ -47,6 +49,7 @@ export const RuleEditor: React.FC<RuleEditorProps> = ({ rule, onSave, onCancel }
       redirectUrl: rule?.action.type === RuleType.URL_REDIRECT ? rule.action.redirectUrl : '',
       headers: rule?.action.type === RuleType.HEADER_MODIFICATION ? rule.action.headers : [],
       params: rule?.action.type === RuleType.QUERY_PARAM ? rule.action.params : [],
+      script: rule?.action.type === RuleType.SCRIPT_INJECTION ? rule.action.script : { code: '', runAt: 'document_end' },
     },
     mode: 'onSubmit',
   });
@@ -79,10 +82,7 @@ export const RuleEditor: React.FC<RuleEditorProps> = ({ rule, onSave, onCancel }
       case RuleType.SCRIPT_INJECTION:
         action = {
           type: RuleType.SCRIPT_INJECTION,
-          script: {
-            code: '',
-            runAt: 'document_end',
-          },
+          script: data.script,
         };
         break;
       case RuleType.QUERY_PARAM:
@@ -289,6 +289,24 @@ export const RuleEditor: React.FC<RuleEditorProps> = ({ rule, onSave, onCancel }
             render={({ field }) => (
               <QueryParamEditor
                 params={field.value}
+                onChange={field.onChange}
+              />
+            )}
+          />
+        </div>
+      )}
+
+      {watchedRuleType === RuleType.SCRIPT_INJECTION && (
+        <div>
+          <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
+            Script Injection
+          </label>
+          <Controller
+            control={control}
+            name="script"
+            render={({ field }) => (
+              <ScriptInjectionEditor
+                script={field.value}
                 onChange={field.onChange}
               />
             )}
