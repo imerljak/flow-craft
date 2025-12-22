@@ -14,8 +14,9 @@ import { Rule } from '@shared/types';
  * Message types for runtime communication
  */
 interface BackgroundMessage {
-  type: 'GET_RULES' | 'SAVE_RULE' | 'DELETE_RULE' | 'SYNC_RULES';
+  type: 'GET_RULES' | 'SAVE_RULE' | 'DELETE_RULE' | 'SYNC_RULES' | 'GET_MOCK_RULES' | 'FIND_MOCK_RULE';
   data?: Rule | string;
+  url?: string;
 }
 
 /**
@@ -35,8 +36,31 @@ async function syncRules(): Promise<void> {
     await RequestInterceptor.updateDynamicRules(rules);
     await ScriptInjector.updateScriptRules(rules);
     await ResponseMocker.updateMockRules(rules);
+
+    // Notify all content scripts about rule updates
+    await notifyContentScripts();
   } catch (error) {
     console.error('Failed to sync rules:', error);
+  }
+}
+
+/**
+ * Notify all content scripts to sync mock rules
+ */
+async function notifyContentScripts(): Promise<void> {
+  try {
+    const tabs = await browser.tabs.query({});
+    for (const tab of tabs) {
+      if (tab.id) {
+        try {
+          await browser.tabs.sendMessage(tab.id, { type: 'SYNC_MOCK_RULES' });
+        } catch {
+          // Ignore errors for tabs without content scripts
+        }
+      }
+    }
+  } catch (error) {
+    console.error('Failed to notify content scripts:', error);
   }
 }
 
@@ -86,6 +110,30 @@ browser.runtime.onMessage.addListener((message: unknown, _sender, sendResponse):
         case 'SYNC_RULES': {
           await syncRules();
           sendResponse({ success: true });
+          break;
+        }
+        case 'GET_MOCK_RULES': {
+          const rules = await Storage.getRules();
+          sendResponse({ success: true, rules });
+          break;
+        }
+        case 'FIND_MOCK_RULE': {
+          const url = msg.url;
+          if (!url) {
+            sendResponse({ success: false, error: 'URL is required' });
+            break;
+          }
+
+          const matchedRule = ResponseMocker.findMatchingRule(url);
+          if (matchedRule && matchedRule.action.type === 'mock_response') {
+            sendResponse({
+              success: true,
+              ruleId: matchedRule.id,
+              mockResponse: matchedRule.action.mockResponse,
+            });
+          } else {
+            sendResponse({ success: false });
+          }
           break;
         }
         default: {
