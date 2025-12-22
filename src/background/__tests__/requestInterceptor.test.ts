@@ -446,4 +446,189 @@ describe('RequestInterceptor', () => {
       expect(call?.[0].addRules).toHaveLength(1);
     });
   });
+
+  describe('Query Parameter Modification', () => {
+    it('should convert add query param operation to Chrome format', () => {
+      const rule: Rule = {
+        id: 'test-qp-1',
+        name: 'Add Query Param',
+        enabled: true,
+        priority: 1,
+        matcher: {
+          type: 'exact',
+          pattern: 'https://example.com/page',
+        },
+        action: {
+          type: RuleType.QUERY_PARAM,
+          params: [
+            {
+              operation: 'add',
+              name: 'utm_source',
+              value: 'google',
+            },
+          ],
+        },
+        createdAt: Date.now(),
+        updatedAt: Date.now(),
+      };
+
+      const chromeRule = RequestInterceptor.convertToDeclarativeNetRequestRule(rule, 1);
+
+      expect(chromeRule?.action).toEqual({
+        type: 'redirect',
+        redirect: {
+          transform: {
+            queryTransform: {
+              addOrReplaceParams: [
+                {
+                  key: 'utm_source',
+                  value: 'google',
+                },
+              ],
+              removeParams: undefined,
+            },
+          },
+        },
+      });
+    });
+
+    it('should convert modify query param operation to Chrome format', () => {
+      const rule: Rule = {
+        id: 'test-qp-2',
+        name: 'Modify Query Param',
+        enabled: true,
+        priority: 1,
+        matcher: {
+          type: 'exact',
+          pattern: 'https://example.com/page',
+        },
+        action: {
+          type: RuleType.QUERY_PARAM,
+          params: [
+            {
+              operation: 'modify',
+              name: 'id',
+              value: '123',
+            },
+          ],
+        },
+        createdAt: Date.now(),
+        updatedAt: Date.now(),
+      };
+
+      const chromeRule = RequestInterceptor.convertToDeclarativeNetRequestRule(rule, 1);
+
+      expect(chromeRule?.action).toEqual({
+        type: 'redirect',
+        redirect: {
+          transform: {
+            queryTransform: {
+              addOrReplaceParams: [
+                {
+                  key: 'id',
+                  value: '123',
+                },
+              ],
+              removeParams: undefined,
+            },
+          },
+        },
+      });
+    });
+
+    it('should convert remove query param operation to Chrome format', () => {
+      const rule: Rule = {
+        id: 'test-qp-3',
+        name: 'Remove Query Param',
+        enabled: true,
+        priority: 1,
+        matcher: {
+          type: 'exact',
+          pattern: 'https://example.com/page',
+        },
+        action: {
+          type: RuleType.QUERY_PARAM,
+          params: [
+            {
+              operation: 'remove',
+              name: 'tracking_id',
+            },
+          ],
+        },
+        createdAt: Date.now(),
+        updatedAt: Date.now(),
+      };
+
+      const chromeRule = RequestInterceptor.convertToDeclarativeNetRequestRule(rule, 1);
+
+      expect(chromeRule?.action).toEqual({
+        type: 'redirect',
+        redirect: {
+          transform: {
+            queryTransform: {
+              addOrReplaceParams: undefined,
+              removeParams: ['tracking_id'],
+            },
+          },
+        },
+      });
+    });
+
+    it('should handle multiple query param operations', () => {
+      const rule: Rule = {
+        id: 'test-qp-4',
+        name: 'Multiple Query Param Operations',
+        enabled: true,
+        priority: 1,
+        matcher: {
+          type: 'exact',
+          pattern: 'https://example.com/page',
+        },
+        action: {
+          type: RuleType.QUERY_PARAM,
+          params: [
+            {
+              operation: 'add',
+              name: 'new_param',
+              value: 'value1',
+            },
+            {
+              operation: 'modify',
+              name: 'existing_param',
+              value: 'value2',
+            },
+            {
+              operation: 'remove',
+              name: 'old_param',
+            },
+          ],
+        },
+        createdAt: Date.now(),
+        updatedAt: Date.now(),
+      };
+
+      const chromeRule = RequestInterceptor.convertToDeclarativeNetRequestRule(rule, 1);
+
+      expect(chromeRule?.action).toEqual({
+        type: 'redirect',
+        redirect: {
+          transform: {
+            queryTransform: {
+              addOrReplaceParams: [
+                {
+                  key: 'new_param',
+                  value: 'value1',
+                },
+                {
+                  key: 'existing_param',
+                  value: 'value2',
+                },
+              ],
+              removeParams: ['old_param'],
+            },
+          },
+        },
+      });
+    });
+  });
 });
