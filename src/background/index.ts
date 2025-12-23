@@ -155,10 +155,35 @@ browser.runtime.onMessage.addListener((message: unknown, _sender, sendResponse):
   return true;
 });
 
-// Listen for page navigation to inject user scripts
+// Import the MAIN world interceptor code
+import { MAIN_WORLD_INTERCEPTOR } from '../content/main-world-interceptor-code';
+
+// Function to inject MAIN world interceptor into a tab
+async function injectMainWorldInterceptor(tabId: number): Promise<void> {
+  try {
+    await browser.scripting.executeScript({
+      target: { tabId },
+      world: 'MAIN' as chrome.scripting.ExecutionWorld,
+      func: (code: string) => {
+        // eslint-disable-next-line @typescript-eslint/no-implied-eval, no-eval
+        eval(code);
+      },
+      args: [MAIN_WORLD_INTERCEPTOR],
+      injectImmediately: true,
+    });
+    console.log('[FlowCraft Background] Injected MAIN world interceptor into tab', tabId);
+  } catch (error) {
+    console.error('[FlowCraft Background] Failed to inject MAIN world interceptor:', error);
+  }
+}
+
+// Listen for page navigation to inject scripts
 browser.webNavigation.onCommitted.addListener(async (details) => {
   if (details.frameId === 0) {
-    // Only handle main frame navigation for user script injection
+    // Inject MAIN world interceptor first (bypasses CSP)
+    await injectMainWorldInterceptor(details.tabId);
+
+    // Then handle user script injection
     void ScriptInjector.handleNavigation(details.tabId, details.url);
   }
 });
