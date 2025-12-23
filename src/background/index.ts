@@ -119,19 +119,25 @@ browser.runtime.onMessage.addListener((message: unknown, _sender, sendResponse):
         }
         case 'FIND_MOCK_RULE': {
           const url = msg.url;
+          console.log('[FlowCraft Background] Finding mock rule for:', url);
+
           if (!url) {
+            console.error('[FlowCraft Background] No URL provided');
             sendResponse({ success: false, error: 'URL is required' });
             break;
           }
 
           const matchedRule = ResponseMocker.findMatchingRule(url);
+
           if (matchedRule && matchedRule.action.type === 'mock_response') {
+            console.log('[FlowCraft Background] Found matching rule:', matchedRule.id, matchedRule.name);
             sendResponse({
               success: true,
               ruleId: matchedRule.id,
               mockResponse: matchedRule.action.mockResponse,
             });
           } else {
+            console.log('[FlowCraft Background] No matching mock rule for:', url);
             sendResponse({ success: false });
           }
           break;
@@ -149,151 +155,10 @@ browser.runtime.onMessage.addListener((message: unknown, _sender, sendResponse):
   return true;
 });
 
-// MAIN world interceptor code (injected into page context)
-const MAIN_WORLD_INTERCEPTOR = `
-(() => {
-  console.log('[FlowCraft] Initializing MAIN world interceptor');
-
-  const originalFetch = window.fetch;
-  const OriginalXHR = window.XMLHttpRequest;
-
-  async function checkForMock(url) {
-    return new Promise((resolve) => {
-      const requestId = Math.random().toString(36);
-
-      const messageHandler = (event) => {
-        if (event.data?.type === 'FLOWCRAFT_MOCK_RESPONSE' && event.data.requestId === requestId) {
-          window.removeEventListener('message', messageHandler);
-          resolve(event.data.mockResponse);
-        }
-      };
-
-      window.addEventListener('message', messageHandler);
-
-      window.postMessage({ type: 'FLOWCRAFT_CHECK_MOCK', requestId, url }, '*');
-
-      setTimeout(() => {
-        window.removeEventListener('message', messageHandler);
-        resolve(null);
-      }, 1000);
-    });
-  }
-
-  function getDefaultStatusText(statusCode) {
-    const statusTexts = {
-      200: 'OK', 201: 'Created', 204: 'No Content',
-      400: 'Bad Request', 401: 'Unauthorized', 403: 'Forbidden',
-      404: 'Not Found', 500: 'Internal Server Error',
-      502: 'Bad Gateway', 503: 'Service Unavailable'
-    };
-    return statusTexts[statusCode] || 'Unknown';
-  }
-
-  window.fetch = async function(input, init) {
-    const url = typeof input === 'string' ? input : input instanceof URL ? input.href : input.url;
-    const mockResponse = await checkForMock(url);
-
-    if (mockResponse) {
-      console.log('[FlowCraft] Mocking fetch:', url);
-      if (mockResponse.delay && mockResponse.delay > 0) {
-        await new Promise(resolve => setTimeout(resolve, mockResponse.delay));
-      }
-      return new Response(mockResponse.body || '', {
-        status: mockResponse.statusCode,
-        statusText: mockResponse.statusText || getDefaultStatusText(mockResponse.statusCode),
-        headers: new Headers(mockResponse.headers || {})
-      });
-    }
-
-    return originalFetch.call(this, input, init);
-  };
-
-  window.XMLHttpRequest = function() {
-    const xhr = new OriginalXHR();
-    let requestUrl = '';
-
-    const originalOpen = xhr.open;
-    const originalSend = xhr.send;
-
-    xhr.open = function(...args) {
-      requestUrl = typeof args[1] === 'string' ? args[1] : args[1].href;
-      return originalOpen.apply(this, args);
-    };
-
-    xhr.send = async function(body) {
-      const mockResponse = await checkForMock(requestUrl);
-
-      if (mockResponse) {
-        console.log('[FlowCraft] Mocking XHR:', requestUrl);
-
-        if (mockResponse.delay && mockResponse.delay > 0) {
-          await new Promise(resolve => setTimeout(resolve, mockResponse.delay));
-        }
-
-        Object.defineProperty(xhr, 'status', { get: () => mockResponse.statusCode });
-        Object.defineProperty(xhr, 'statusText', { get: () => mockResponse.statusText || getDefaultStatusText(mockResponse.statusCode) });
-        Object.defineProperty(xhr, 'response', { get: () => mockResponse.body || '' });
-        Object.defineProperty(xhr, 'responseText', { get: () => mockResponse.body || '' });
-        Object.defineProperty(xhr, 'readyState', { get: () => 4 });
-
-        const originalGetResponseHeader = xhr.getResponseHeader;
-        xhr.getResponseHeader = function(name) {
-          if (mockResponse.headers) {
-            return mockResponse.headers[name] || mockResponse.headers[name.toLowerCase()] || null;
-          }
-          return originalGetResponseHeader.call(this, name);
-        };
-
-        const originalGetAllResponseHeaders = xhr.getAllResponseHeaders;
-        xhr.getAllResponseHeaders = function() {
-          if (mockResponse.headers) {
-            return Object.entries(mockResponse.headers).map(([k, v]) => k + ': ' + v).join('\\r\\n');
-          }
-          return originalGetAllResponseHeaders.call(this);
-        };
-
-        setTimeout(() => {
-          xhr.dispatchEvent(new Event('loadstart'));
-          xhr.dispatchEvent(new Event('readystatechange'));
-          xhr.dispatchEvent(new Event('load'));
-          xhr.dispatchEvent(new Event('loadend'));
-        }, 0);
-
-        return;
-      }
-
-      return originalSend.call(this, body);
-    };
-
-    return xhr;
-  };
-
-  Object.setPrototypeOf(window.XMLHttpRequest, OriginalXHR);
-  window.XMLHttpRequest.prototype = OriginalXHR.prototype;
-
-  console.log('[FlowCraft] MAIN world interceptor ready');
-})();
-`;
-
-// Listen for page navigation to inject scripts
+// Listen for page navigation to inject user scripts
 browser.webNavigation.onCommitted.addListener(async (details) => {
   if (details.frameId === 0) {
-    // Only handle main frame navigation
+    // Only handle main frame navigation for user script injection
     void ScriptInjector.handleNavigation(details.tabId, details.url);
-
-    // Inject the MAIN world interceptor for mock responses
-    try {
-      // eslint-disable-next-line @typescript-eslint/no-implied-eval
-      const func = new Function(MAIN_WORLD_INTERCEPTOR) as () => void;
-      await browser.scripting.executeScript({
-        target: { tabId: details.tabId },
-        func,
-        world: 'MAIN' as chrome.scripting.ExecutionWorld,
-        injectImmediately: true,
-      });
-      console.log('[FlowCraft] Injected MAIN world interceptor into tab', details.tabId);
-    } catch (error) {
-      console.error('[FlowCraft] Failed to inject MAIN world interceptor:', error);
-    }
   }
 });

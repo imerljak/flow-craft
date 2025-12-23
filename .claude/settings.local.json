@@ -13,7 +13,9 @@
       "Bash(npm run test:*)",
       "Bash(npm run test:e2e:*)",
       "Bash(grep:*)",
-      "Bash(pkill:*)"
+      "Bash(pkill:*)",
+      "Bash(ls:*)",
+      "Bash(cat:*)"
     ]
   }
 }

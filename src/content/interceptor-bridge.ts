@@ -13,7 +13,7 @@ window.addEventListener('message', async (event) => {
   if (event.data?.type === 'FLOWCRAFT_CHECK_MOCK') {
     const { requestId, url } = event.data;
 
-    console.log('[FlowCraft Bridge] Checking for mock rule:', url);
+    console.log('[FlowCraft Bridge] Received mock check:', { requestId, url });
 
     try {
       // Ask background script for mock rule
@@ -22,7 +22,11 @@ window.addEventListener('message', async (event) => {
         url,
       });
 
-      console.log('[FlowCraft Bridge] Background response:', response);
+      console.log('[FlowCraft Bridge] Background response:', {
+        requestId,
+        success: response?.success,
+        hasMock: !!response?.mockResponse,
+      });
 
       // Send response back to MAIN world
       window.postMessage(
@@ -33,6 +37,8 @@ window.addEventListener('message', async (event) => {
         },
         '*'
       );
+
+      console.log('[FlowCraft Bridge] Sent response to MAIN world:', requestId);
     } catch (error) {
       console.error('[FlowCraft Bridge] Error:', error);
       // Send null response
@@ -48,4 +54,19 @@ window.addEventListener('message', async (event) => {
   }
 });
 
-console.log('[FlowCraft Bridge] Bridge ready');
+console.log('[FlowCraft Bridge] Bridge ready, broadcasting...');
+
+// Broadcast ready state immediately
+window.postMessage({ type: 'FLOWCRAFT_BRIDGE_READY' }, '*');
+
+// Continue broadcasting for 2 seconds to catch late MAIN world injections
+let readyBroadcastCount = 0;
+const readyInterval = setInterval(() => {
+  window.postMessage({ type: 'FLOWCRAFT_BRIDGE_READY' }, '*');
+  readyBroadcastCount++;
+  if (readyBroadcastCount >= 20) {
+    // 20 * 100ms = 2s
+    clearInterval(readyInterval);
+    console.log('[FlowCraft Bridge] Ready broadcast complete');
+  }
+}, 100);
