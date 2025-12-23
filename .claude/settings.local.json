@@ -10,7 +10,10 @@
       "Bash(git push:*)",
       "Bash(npm run test:coverage:*)",
       "Bash(git reset:*)",
-      "Bash(npm run test:*)"
+      "Bash(npm run test:*)",
+      "Bash(npm run test:e2e:*)",
+      "Bash(grep:*)",
+      "Bash(pkill:*)"
     ]
   }
 }

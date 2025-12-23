@@ -6,6 +6,7 @@
 import { MockResponse } from '@shared/types';
 import { Input } from '@components/Input/Input';
 import { useState } from 'react';
+import { Description, Field, Label, Textarea } from '@headlessui/react';
 
 interface MockResponseEditorProps {
   mockResponse: MockResponse;
@@ -168,25 +169,26 @@ export const MockResponseEditor = ({
       </div>
 
       {/* Response Body */}
-      <div>
-        <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
+      <Field>
+        <Label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
           Response Body (Optional)
-        </label>
-        <textarea
+        </Label>
+        <Textarea
           data-testid="response-body-textarea"
           value={mockResponse.body || ''}
           onChange={(e) => handleBodyChange(e.target.value)}
           placeholder='{"message": "This is a mock response", "data": []}'
           rows={8}
+          maxLength={50_000}
           className="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded bg-white dark:bg-neutral-900 text-neutral-900 dark:text-neutral-100 placeholder-neutral-400 dark:placeholder-neutral-500 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-blue-500 resize-vertical"
         />
-        <p className="mt-1 text-xs text-neutral-500 dark:text-neutral-400">
+        <Description className="mt-1 text-xs text-neutral-500 dark:text-neutral-400">
           Response body content (JSON, HTML, text, etc.)
-        </p>
-      </div>
+        </Description>
+      </Field>
 
       {/* Delay */}
-      <div>
+      <Field>
         <Input
           data-testid="response-delay-input"
           label="Response Delay (Optional)"
@@ -197,10 +199,10 @@ export const MockResponseEditor = ({
           min="0"
           max="10000"
         />
-        <p className="mt-1 text-xs text-neutral-500 dark:text-neutral-400">
+        <Description className="mt-1 text-xs text-neutral-500 dark:text-neutral-400">
           Delay in milliseconds before sending response (max 10 seconds)
-        </p>
-      </div>
+        </Description>
+      </Field>
 
       {/* Info */}
       <div className="p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded">
