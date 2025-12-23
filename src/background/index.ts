@@ -14,9 +14,10 @@ import { Rule } from '@shared/types';
  * Message types for runtime communication
  */
 interface BackgroundMessage {
-  type: 'GET_RULES' | 'SAVE_RULE' | 'DELETE_RULE' | 'SYNC_RULES' | 'GET_MOCK_RULES' | 'FIND_MOCK_RULE';
+  type: 'GET_RULES' | 'SAVE_RULE' | 'DELETE_RULE' | 'SYNC_RULES' | 'GET_MOCK_RULES' | 'FIND_MOCK_RULE' | 'INJECT_MAIN_WORLD';
   data?: Rule | string;
   url?: string;
+  tabId?: number;
 }
 
 /**
@@ -142,6 +143,18 @@ browser.runtime.onMessage.addListener((message: unknown, _sender, sendResponse):
           }
           break;
         }
+        case 'INJECT_MAIN_WORLD': {
+          // Get the tab ID from the sender
+          if (_sender.tab?.id) {
+            console.log('[FlowCraft Background] Received INJECT_MAIN_WORLD request for tab', _sender.tab.id);
+            await injectMainWorldInterceptor(_sender.tab.id);
+            sendResponse({ success: true });
+          } else {
+            console.error('[FlowCraft Background] INJECT_MAIN_WORLD: No tab ID in sender');
+            sendResponse({ success: false, error: 'No tab ID' });
+          }
+          break;
+        }
         default: {
           sendResponse({ success: false, error: 'Unknown message type' });
         }
@@ -161,9 +174,10 @@ import { MAIN_WORLD_INTERCEPTOR } from '../content/main-world-interceptor-code';
 // Function to inject MAIN world interceptor into a tab
 async function injectMainWorldInterceptor(tabId: number): Promise<void> {
   try {
-    await browser.scripting.executeScript({
+    // Use chrome.scripting directly as browser polyfill may not support 'world' parameter properly
+    await chrome.scripting.executeScript({
       target: { tabId },
-      world: 'MAIN' as chrome.scripting.ExecutionWorld,
+      world: 'MAIN',
       func: (code: string) => {
         // eslint-disable-next-line @typescript-eslint/no-implied-eval, no-eval
         eval(code);

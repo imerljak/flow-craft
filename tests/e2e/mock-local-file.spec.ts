@@ -50,11 +50,12 @@ test.describe('FlowCraft - Mock Local File Test', () => {
 
     await optionsPage.getByTestId('new-rule-btn').click();
 
-    // Fill in rule details - exact match for the data.json file
+    // Fill in rule details - wildcard match for data.json (handles relative URLs)
     await optionsPage.fill('input[placeholder*="CORS"]', 'Mock Local Data File');
-    await optionsPage.fill('input[placeholder*="api.example.com"]', `${testAppUrl}/data.json`);
+    await optionsPage.fill('input[placeholder*="api.example.com"]', '*/data.json');
 
-    // Pattern type defaults to 'exact', no need to change it
+    // Change to wildcard pattern to catch relative URLs like ./data.json
+    await optionsPage.selectOption('select#pattern-type', { value: 'wildcard' });
 
     // Select mock response type
     await optionsPage.selectOption('select#rule-type', { value: 'mock_response' });
@@ -96,15 +97,12 @@ test.describe('FlowCraft - Mock Local File Test', () => {
     await testPage.waitForTimeout(1000);
 
     // Test 1: Fetch API
-    console.log('[Test] Testing fetch API...');
     await testPage.evaluate(() => window.testApp.fetchData());
 
     // Wait for result to be stored
     await testPage.waitForFunction(() => window.testResult !== undefined);
 
     const fetchResult = await testPage.evaluate(() => window.testResult);
-
-    console.log('[Test] Fetch result:', fetchResult);
 
     // Verify the MOCKED response was returned
     expect(fetchResult.status).toBe(200);
@@ -116,15 +114,12 @@ test.describe('FlowCraft - Mock Local File Test', () => {
     expect(fetchResult.data.items).toEqual(['intercepted', 'mocked', 'success']);
 
     // Test 2: XMLHttpRequest
-    console.log('[Test] Testing XMLHttpRequest...');
     await testPage.evaluate(() => window.testApp.fetchDataXHR());
 
     // Wait for XHR result to be stored
     await testPage.waitForFunction(() => window.xhrTestResult !== undefined);
 
     const xhrResult = await testPage.evaluate(() => window.xhrTestResult);
-
-    console.log('[Test] XHR result:', xhrResult);
 
     // Verify the MOCKED response was returned
     expect(xhrResult.status).toBe(200);
@@ -139,7 +134,7 @@ test.describe('FlowCraft - Mock Local File Test', () => {
   });
 
   test('should return real file when mock rule is disabled', async () => {
-    // Create a disabled mock rule
+    // Create a mock rule and then disable it
     const optionsPage = await ExtensionUtils.openOptions(context, extensionId);
 
     await optionsPage.getByTestId('new-rule-btn').click();
@@ -157,10 +152,19 @@ test.describe('FlowCraft - Mock Local File Test', () => {
     await optionsPage.click('button:has-text("Save Rule")');
     await expect(optionsPage.getByTestId('rule-editor-drawer')).not.toBeVisible();
 
-    // Disable the rule
-    await optionsPage.locator('text=Disabled Mock Rule').click();
-    const toggleSwitch = optionsPage.locator('[role="switch"]').first();
-    await toggleSwitch.click();
+    // Verify rule was created
+    await expect(optionsPage.locator('text=Disabled Mock Rule')).toBeVisible();
+
+    // Wait a moment for any animations/state updates
+    await optionsPage.waitForTimeout(500);
+
+    // Find the rule row and disable it via the toggle button
+    const ruleRow = optionsPage.locator('tr:has-text("Disabled Mock Rule")');
+    await expect(ruleRow).toBeVisible();
+
+    // Click the toggle button (it's the first button in the row)
+    const toggleButton = ruleRow.locator('button').first();
+    await toggleButton.click();
 
     await optionsPage.close();
 
@@ -176,8 +180,6 @@ test.describe('FlowCraft - Mock Local File Test', () => {
     await testPage.waitForFunction(() => window.testResult !== undefined);
 
     const result = await testPage.evaluate(() => window.testResult);
-
-    console.log('[Test] Result with disabled rule:', result);
 
     // Should get REAL data from the file
     expect(result.data).toMatchObject({

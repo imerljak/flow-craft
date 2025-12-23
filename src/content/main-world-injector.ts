@@ -11,11 +11,9 @@
  * happens early enough to beat Zone.js in most cases.
  */
 
-console.log('[FlowCraft Injector] Content script loaded at document_start');
-
 // Request background script to inject the MAIN world interceptor
 // Background script will use chrome.scripting.executeScript which bypasses CSP
 chrome.runtime.sendMessage({ type: 'INJECT_MAIN_WORLD' }).catch(() => {
   // Ignore errors if background isn't ready yet
-  console.log('[FlowCraft Injector] Background not ready, will inject via webNavigation');
+  // The webNavigation.onCommitted listener will handle injection as fallback
 });
