@@ -45,6 +45,8 @@ export default defineConfig({
         'src/options/App.tsx',    // covered by E2E
         'src/options/index.tsx',
         'src/background/index.ts',// MV3 service worker
+        'src/content/**/*.ts',    // content scripts - covered by E2E
+        'src/components/Drawer/Drawer.tsx', // UI component - covered by E2E
         'src/**/index.ts',        // barrel files
       ],
 
