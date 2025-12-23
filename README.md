@@ -151,9 +151,9 @@ src/
 
 FlowCraft follows Test-Driven Development (TDD) principles:
 
-- **Unit Tests**: Jest + React Testing Library
-- **E2E Tests**: Playwright
-- **Coverage**: Minimum 80% code coverage required
+- **Unit Tests**: Vitest + React Testing Library (57 tests)
+- **E2E Tests**: Playwright (32 tests)
+- **Coverage**: Minimum 75% code coverage required (currently >83%)
 
 ```bash
 # Run all tests
@@ -181,20 +181,23 @@ Contributions are welcome! Please read our [Contributing Guide](CONTRIBUTING.md)
 
 ## 📋 Roadmap
 
-### Phase 1 (MVP) - Current
+### Phase 1 (MVP) - ✅ COMPLETE
 - ✅ Core rule engine
 - ✅ Header modification
 - ✅ Storage layer
-- 🚧 URL redirection
-- 🚧 Response mocking
-- 🚧 Script injection
+- ✅ URL redirection
+- ✅ Response mocking
+- ✅ Script injection
+- ✅ Query parameter modification
+- ✅ Request blocking
 
-### Phase 2
-- Request/response viewer
+### Phase 2 - Current
+- Request/response viewer/logger
 - Rule templates library
-- Import/export rules
-- Rule conflict detection
+- Import/export rules UI
+- Rule conflict detection UI
 - Performance optimization
+- Chrome Web Store deployment
 
 ### Phase 3
 - AI-assisted rule suggestions

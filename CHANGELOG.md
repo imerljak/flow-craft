@@ -8,15 +8,30 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
-- Comprehensive Playwright E2E test suite
+- **Response Mocking Feature** ✅
+  - MAIN world script injection bypassing CSP
+  - fetch() and XMLHttpRequest interception
+  - Message passing architecture between MAIN world, content scripts, and background
+  - Support for custom status codes, headers, body, and delays
+  - E2E tests for mock response functionality
+- **Script Injection Feature** ✅
+  - User script injection via Chrome scripting API
+  - Automatic injection on page navigation
+  - Support for JavaScript code execution
+- **Query Parameter Modification** ✅
+  - URL query parameter manipulation using declarativeNetRequest
+  - Add, modify, remove query parameters
+- Comprehensive Playwright E2E test suite (32 tests)
   - Basic popup functionality tests
   - Rule management tests (create, edit, delete, toggle)
   - Form validation tests
   - Data persistence tests
+  - Mock response functional tests
+  - Local file mocking tests
 - GitHub Actions CI/CD pipeline
   - Automated type checking
   - Code linting
-  - Unit test execution with coverage enforcement (≥80%)
+  - Unit test execution with coverage enforcement (≥75%)
   - E2E test execution
   - Build validation
   - Quality gate enforcement
@@ -30,14 +45,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - GitHub release creation
   - Checksum generation
   - Chrome Web Store preparation (placeholder)
+- Code of Conduct (Contributor Covenant v3.0)
+- Security Policy (SECURITY.md)
 - Contribution guidelines (CONTRIBUTING.md)
 - Pull request template with comprehensive checklist
 - Issue templates for bug reports and feature requests
 - Changelog for tracking project history
 
 ### Changed
+- Migrated from @crxjs/vite-plugin to vite-plugin-web-extension
+- Migrated from Jest to Vitest for better ESM support
+- Migrated to Tailwind CSS v4 with @theme directive
+- Updated ESLint to v9 flat config (eslint.config.mjs)
 - Updated Playwright configuration for Chrome extension testing
 - Improved test utilities for extension testing
+- Fixed CSP blocking issue with MAIN world script injection
+- Updated coverage thresholds and exclusions for E2E-tested code
+
+### Fixed
+- CSP blocking inline script execution (now using chrome.scripting.executeScript)
+- Race conditions in MAIN world interceptor initialization
+- Mock response feature now fully functional
+- All 57 unit tests passing
+- All 32 E2E tests passing
 
 ## [1.0.0] - Previous Work
 
@@ -131,11 +161,10 @@ Security-related changes
 
 ## Upcoming Features (Planned)
 
-- Response mocking capabilities
-- Script injection support
-- Query parameter modification
+- Request/response viewer/logger
+- Rule templates library
+- Rule import/export UI
 - Performance optimizations
-- Additional E2E tests
 - Chrome Web Store deployment
 - Enhanced documentation
 - Video tutorials

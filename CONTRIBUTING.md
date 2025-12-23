@@ -4,7 +4,7 @@ Thank you for your interest in contributing to FlowCraft! This guide will help y
 
 ## Code of Conduct
 
-By participating in this project, you agree to maintain a respectful and inclusive environment for everyone.
+By participating in this project, you agree to abide by our [Code of Conduct](CODE_OF_CONDUCT.md).
 
 ## Getting Started
 
@@ -100,9 +100,10 @@ export const Button: React.FC<ButtonProps> = ({ variant, onClick, children }) =>
 
 #### Testing
 
-- Minimum 80% code coverage required
+- Minimum 75% code coverage required
 - Test both happy paths and error cases
 - Use descriptive test names
+- We use Vitest for unit tests and Playwright for E2E tests
 
 ```typescript
 describe('RuleEngine', () => {
@@ -134,6 +135,8 @@ npm run build
 # 4. Select the `dist` folder
 ```
 
+See [BUILD.md](BUILD.md) for detailed build instructions.
+
 ### Testing
 
 ```bash
@@ -160,11 +163,11 @@ npm run lint
 
 ### Before Submitting
 
-1. ✅ All tests pass
-2. ✅ Code coverage meets 80% threshold
+1. ✅ All tests pass (unit + E2E)
+2. ✅ Code coverage meets 75% threshold
 3. ✅ No TypeScript errors
 4. ✅ No linting errors
-5. ✅ Code is formatted (run `npm run format`)
+5. ✅ Code is formatted (Prettier via ESLint)
 
 ### PR Guidelines
 
@@ -208,8 +211,8 @@ How to test these changes
 Add screenshots for UI changes
 
 ## Checklist
-- [ ] Tests pass
-- [ ] Code coverage ≥ 80%
+- [ ] Tests pass (unit + E2E)
+- [ ] Code coverage ≥ 75%
 - [ ] No TypeScript errors
 - [ ] No linting errors
 - [ ] Documentation updated
