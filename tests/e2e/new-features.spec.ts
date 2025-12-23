@@ -128,7 +128,7 @@ test.describe('FlowCraft - New Features (Query Params, Script Injection, Respons
       // Add first parameter (add)
       await page.click('button:has-text("Add Parameter")');
       let paramRows = page.locator('[data-testid^="param-row-"]');
-      let row1 = paramRows.nth(0);
+      const row1 = paramRows.nth(0);
       await row1.locator('select').first().selectOption({ value: 'add' });
       await row1.locator('input[placeholder="Parameter name"]').fill('key1');
       await row1.locator('input[placeholder="Parameter value"]').fill('value1');
@@ -136,7 +136,7 @@ test.describe('FlowCraft - New Features (Query Params, Script Injection, Respons
       // Add second parameter (modify)
       await page.click('button:has-text("Add Parameter")');
       paramRows = page.locator('[data-testid^="param-row-"]');
-      let row2 = paramRows.nth(1);
+      const row2 = paramRows.nth(1);
       await row2.locator('select').first().selectOption({ value: 'modify' });
       await row2.locator('input[placeholder="Parameter name"]').fill('key2');
       await row2.locator('input[placeholder="Parameter value"]').fill('value2');
@@ -144,7 +144,7 @@ test.describe('FlowCraft - New Features (Query Params, Script Injection, Respons
       // Add third parameter (remove)
       await page.click('button:has-text("Add Parameter")');
       paramRows = page.locator('[data-testid^="param-row-"]');
-      let row3 = paramRows.nth(2);
+      const row3 = paramRows.nth(2);
       await row3.locator('select').first().selectOption({ value: 'remove' });
       await row3.locator('input[placeholder="Parameter name"]').fill('tracking');
 

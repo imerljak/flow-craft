@@ -4,6 +4,7 @@
  */
 
 import { ScriptInjection } from '@shared/types';
+import { JSX } from 'react';
 
 interface ScriptInjectionEditorProps {
   script: ScriptInjection;
@@ -13,15 +14,15 @@ interface ScriptInjectionEditorProps {
 export const ScriptInjectionEditor = ({
   script,
   onChange,
-}: ScriptInjectionEditorProps) => {
-  const handleCodeChange = (value: string) => {
+}: ScriptInjectionEditorProps): JSX.Element => {
+  const handleCodeChange = (value: string): void => {
     onChange({
       ...script,
       code: value,
     });
   };
 
-  const handleRunAtChange = (value: ScriptInjection['runAt']) => {
+  const handleRunAtChange = (value: ScriptInjection['runAt']): void => {
     onChange({
       ...script,
       runAt: value,

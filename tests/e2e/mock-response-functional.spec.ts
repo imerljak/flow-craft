@@ -1,11 +1,7 @@
 import { test, expect, chromium, BrowserContext } from '@playwright/test';
 import path from 'path';
-import { fileURLToPath } from 'url';
-import { dirname } from 'path';
 import { ExtensionUtils } from './extension-utils';
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
 
 test.describe('FlowCraft - Mock Response Functional Test', () => {
   let context: BrowserContext;
@@ -150,7 +146,7 @@ test.describe('FlowCraft - Mock Response Functional Test', () => {
         const xhr = new XMLHttpRequest();
         xhr.open('GET', 'https://api.sampleapis.com/coffee/hot');
 
-        xhr.onload = function () {
+        xhr.onload = function (): void {
           resolve({
             status: xhr.status,
             statusText: xhr.statusText,
@@ -158,7 +154,7 @@ test.describe('FlowCraft - Mock Response Functional Test', () => {
           });
         };
 
-        xhr.onerror = function () {
+        xhr.onerror = function (): void {
           resolve({ error: 'XHR failed' });
         };
 

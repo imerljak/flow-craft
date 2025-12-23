@@ -5,7 +5,7 @@
 
 import { MockResponse } from '@shared/types';
 import { Input } from '@components/Input/Input';
-import { useState } from 'react';
+import { JSX, useState } from 'react';
 import { Description, Field, Label, Textarea } from '@headlessui/react';
 
 interface MockResponseEditorProps {
@@ -16,11 +16,11 @@ interface MockResponseEditorProps {
 export const MockResponseEditor = ({
   mockResponse,
   onChange,
-}: MockResponseEditorProps) => {
+}: MockResponseEditorProps): JSX.Element => {
   const [newHeaderName, setNewHeaderName] = useState('');
   const [newHeaderValue, setNewHeaderValue] = useState('');
 
-  const handleStatusCodeChange = (value: string) => {
+  const handleStatusCodeChange = (value: string): void => {
     const statusCode = parseInt(value, 10);
     if (!isNaN(statusCode)) {
       onChange({
@@ -30,21 +30,21 @@ export const MockResponseEditor = ({
     }
   };
 
-  const handleStatusTextChange = (value: string) => {
+  const handleStatusTextChange = (value: string): void => {
     onChange({
       ...mockResponse,
       statusText: value,
     });
   };
 
-  const handleBodyChange = (value: string) => {
+  const handleBodyChange = (value: string): void => {
     onChange({
       ...mockResponse,
       body: value,
     });
   };
 
-  const handleDelayChange = (value: string) => {
+  const handleDelayChange = (value: string): void => {
     const delay = parseInt(value, 10);
     onChange({
       ...mockResponse,
@@ -52,7 +52,7 @@ export const MockResponseEditor = ({
     });
   };
 
-  const handleAddHeader = () => {
+  const handleAddHeader = (): void => {
     if (newHeaderName && newHeaderValue) {
       onChange({
         ...mockResponse,
@@ -66,7 +66,8 @@ export const MockResponseEditor = ({
     }
   };
 
-  const handleRemoveHeader = (name: string) => {
+  const handleRemoveHeader = (name: string): void => {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { [name]: _, ...remainingHeaders } = mockResponse.headers;
     onChange({
       ...mockResponse,

@@ -57,6 +57,7 @@ export const RuleEditor: React.FC<RuleEditorProps> = ({ rule, onSave, onCancel }
     mode: 'onSubmit',
   });
 
+  // eslint-disable-next-line react-hooks/incompatible-library
   const watchedPatternType = watch('patternType');
   const watchedRuleType = watch('ruleType');
 

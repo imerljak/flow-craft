@@ -3,7 +3,7 @@
  * A slide-in panel from the right side, better suited for complex forms than modals
  */
 
-import { Fragment, ReactNode } from 'react';
+import { Fragment, JSX, ReactNode } from 'react';
 import { Dialog, DialogPanel, DialogTitle, Transition, TransitionChild } from '@headlessui/react';
 import clsx from 'clsx';
 
@@ -15,7 +15,7 @@ export interface DrawerProps {
   testId?: string;
 }
 
-export const Drawer = ({ isOpen, onClose, title, children, testId }: DrawerProps) => {
+export const Drawer = ({ isOpen, onClose, title, children, testId }: DrawerProps): JSX.Element => {
   return (
     <Transition show={isOpen} as={Fragment}>
       <Dialog as="div" className="relative z-50" onClose={onClose}>

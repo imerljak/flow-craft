@@ -5,14 +5,15 @@
 
 import { QueryParamModification } from '@shared/types';
 import { Button } from '@components/Button/Button';
+import { JSX } from 'react';
 
 interface QueryParamEditorProps {
   params: QueryParamModification[];
   onChange: (params: QueryParamModification[]) => void;
 }
 
-export const QueryParamEditor = ({ params, onChange }: QueryParamEditorProps) => {
-  const handleAddParam = () => {
+export const QueryParamEditor = ({ params, onChange }: QueryParamEditorProps): JSX.Element => {
+  const handleAddParam = (): void => {
     onChange([
       ...params,
       {
@@ -23,7 +24,7 @@ export const QueryParamEditor = ({ params, onChange }: QueryParamEditorProps) =>
     ]);
   };
 
-  const handleRemoveParam = (index: number) => {
+  const handleRemoveParam = (index: number): void => {
     const newParams = params.filter((_, i) => i !== index);
     onChange(newParams);
   };
@@ -32,7 +33,7 @@ export const QueryParamEditor = ({ params, onChange }: QueryParamEditorProps) =>
     index: number,
     field: keyof QueryParamModification,
     value: string
-  ) => {
+  ): void => {
     const newParams = [...params];
     const param = newParams[index];
     if (param) {
@@ -45,7 +46,7 @@ export const QueryParamEditor = ({ params, onChange }: QueryParamEditorProps) =>
     <div className="space-y-3">
       {params.length === 0 ? (
         <div className="text-sm text-neutral-500 dark:text-neutral-400 py-4 text-center border border-dashed border-neutral-300 dark:border-neutral-600 rounded">
-          No query parameters configured. Click "Add Parameter" to get started.
+          No query parameters configured. Click &quot;Add Parameter&quot; to get started.
         </div>
       ) : (
         params.map((param, index) => (

@@ -1,11 +1,6 @@
 import { test, expect, chromium, BrowserContext } from '@playwright/test';
 import { ExtensionUtils } from './extension-utils';
 import path from 'path';
-import { fileURLToPath } from 'url';
-import { dirname } from 'path';
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
 
 test.describe('FlowCraft - Debug Interceptor', () => {
   let context: BrowserContext;
@@ -59,8 +54,8 @@ test.describe('FlowCraft - Debug Interceptor', () => {
 
     // Check if interceptor variables exist
     const interceptorCheck = await testPage.evaluate(() => {
-      // @ts-ignore
       return {
+        // @ts-expect-error test specific Window override
         hasFlowCraftLogs: typeof window._FlowCraftDebug !== 'undefined',
         fetchModified: window.fetch.toString().includes('FlowCraft') || window.fetch.name === 'fetch',
         consoleMessages: 'Check console'
@@ -75,7 +70,7 @@ test.describe('FlowCraft - Debug Interceptor', () => {
 
       // Capture console logs
       const originalLog = console.log;
-      console.log = (...args: any[]) => {
+      console.log = (...args: unknown[]): void => {
         consoleLogs.push(args.map((a) => String(a)).join(' '));
         originalLog.apply(console, args);
       };

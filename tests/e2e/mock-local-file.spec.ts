@@ -2,11 +2,6 @@ import { test, expect, chromium, BrowserContext } from '@playwright/test';
 import { ExtensionUtils } from './extension-utils';
 import { TestServer } from './test-server';
 import path from 'path';
-import { fileURLToPath } from 'url';
-import { dirname } from 'path';
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
 
 test.describe('FlowCraft - Mock Local File Test', () => {
   let context: BrowserContext;

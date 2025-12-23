@@ -4,7 +4,7 @@
  * Injected via chrome.scripting.executeScript with world: 'MAIN'
  */
 
-(() => {
+((): void => {
   console.log('[FlowCraft] Initializing MAIN world interceptor');
 
   // Store original fetch and XHR
@@ -24,7 +24,7 @@
     return new Promise((resolve) => {
       const requestId = Math.random().toString(36);
 
-      const messageHandler = (event: MessageEvent) => {
+      const messageHandler = (event: MessageEvent): void => {
         if (event.data?.type === 'FLOWCRAFT_MOCK_RESPONSE' && event.data.requestId === requestId) {
           window.removeEventListener('message', messageHandler);
           resolve(event.data.mockResponse);
@@ -102,7 +102,7 @@
    * Intercept XMLHttpRequest
    */
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  (window as any).XMLHttpRequest = function () {
+  (window as any).XMLHttpRequest = function (): XMLHttpRequest {
     const xhr = new OriginalXHR();
     let requestUrl = '';
     let mockResponse: Awaited<ReturnType<typeof checkForMock>> = null;
@@ -112,13 +112,13 @@
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     xhr.open = function (...args: any[]): void {
-      const [_method, url] = args;
+      const [, url] = args;
       requestUrl = typeof url === 'string' ? url : url.href;
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       return (originalOpen as any).apply(this, args);
     };
 
-    xhr.send = async function (body?: Document | XMLHttpRequestBodyInit | null) {
+    xhr.send = async function (body?: Document | XMLHttpRequestBodyInit | null): Promise<void> {
       mockResponse = await checkForMock(requestUrl);
 
       if (mockResponse) {
@@ -154,7 +154,7 @@
 
         // Override header methods
         const originalGetResponseHeader = xhr.getResponseHeader;
-        xhr.getResponseHeader = function (name: string) {
+        xhr.getResponseHeader = function (name: string): ReturnType<XMLHttpRequest["getResponseHeader"]> {
           if (capturedMockResponse.headers) {
             const headers = capturedMockResponse.headers;
             return headers[name] || headers[name.toLowerCase()] || null;
@@ -163,7 +163,7 @@
         };
 
         const originalGetAllResponseHeaders = xhr.getAllResponseHeaders;
-        xhr.getAllResponseHeaders = function () {
+        xhr.getAllResponseHeaders = function (): ReturnType<XMLHttpRequest["getAllResponseHeaders"]> {
           if (capturedMockResponse.headers) {
             return Object.entries(capturedMockResponse.headers)
               .map(([key, value]) => `${key}: ${value}`)
@@ -191,8 +191,8 @@
   };
 
   // Copy static properties
-  Object.setPrototypeOf((window as any).XMLHttpRequest, OriginalXHR);
-  (window as any).XMLHttpRequest.prototype = OriginalXHR.prototype;
+  Object.setPrototypeOf(window.XMLHttpRequest, OriginalXHR);
+  window.XMLHttpRequest.prototype = OriginalXHR.prototype;
 
   console.log('[FlowCraft] MAIN world interceptor ready');
 })();

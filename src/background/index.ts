@@ -179,7 +179,6 @@ async function injectMainWorldInterceptor(tabId: number): Promise<void> {
       target: { tabId },
       world: 'MAIN',
       func: (code: string) => {
-        // eslint-disable-next-line @typescript-eslint/no-implied-eval, no-eval
         eval(code);
       },
       args: [MAIN_WORLD_INTERCEPTOR],
