@@ -1,0 +1,9 @@
+{
+  "message": "This is the REAL data from data.json",
+  "source": "original-file",
+  "items": [
+    "apple",
+    "banana",
+    "cherry"
+  ]
+}

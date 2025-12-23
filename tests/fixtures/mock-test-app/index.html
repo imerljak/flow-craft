@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FlowCraft Mock Test App</title>
+  <style>
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      max-width: 800px;
+      margin: 40px auto;
+      padding: 20px;
+      background: #f5f5f5;
+    }
+
+    h1 {
+      color: #333;
+    }
+
+    .test-section {
+      background: white;
+      padding: 20px;
+      margin: 20px 0;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    button {
+      background: #007bff;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 16px;
+      margin: 5px;
+    }
+
+    button:hover {
+      background: #0056b3;
+    }
+
+    #result, #xhr-result {
+      background: #f8f9fa;
+      padding: 15px;
+      border-radius: 4px;
+      margin-top: 15px;
+      border-left: 4px solid #007bff;
+    }
+
+    pre {
+      background: #263238;
+      color: #aed581;
+      padding: 15px;
+      border-radius: 4px;
+      overflow-x: auto;
+    }
+
+    .info {
+      background: #e3f2fd;
+      padding: 15px;
+      border-radius: 4px;
+      border-left: 4px solid #2196f3;
+      margin-bottom: 20px;
+    }
+
+    .warning {
+      background: #fff3cd;
+      padding: 15px;
+      border-radius: 4px;
+      border-left: 4px solid #ffc107;
+      margin-top: 20px;
+    }
+  </style>
+</head>
+<body>
+  <h1>🧪 FlowCraft Mock Response Test</h1>
+
+  <div class="info">
+    <strong>Test Objective:</strong> Verify that FlowCraft extension can intercept and mock the fetch request to <code>./data.json</code>
+    <br><br>
+    <strong>Instructions:</strong>
+    <ol>
+      <li>Install FlowCraft extension</li>
+      <li>Create a mock rule for this page's data.json file</li>
+      <li>Click the buttons below to trigger requests</li>
+      <li>Verify the MOCKED response is shown, not the real file</li>
+    </ol>
+  </div>
+
+  <div class="test-section">
+    <h2>Test 1: Fetch API</h2>
+    <button onclick="window.testApp.fetchData()">Fetch data.json</button>
+    <div id="result"></div>
+  </div>
+
+  <div class="test-section">
+    <h2>Test 2: XMLHttpRequest</h2>
+    <button onclick="window.testApp.fetchDataXHR()">Fetch data.json via XHR</button>
+    <div id="xhr-result"></div>
+  </div>
+
+  <div class="warning">
+    <strong>Expected Behavior:</strong>
+    <ul>
+      <li><strong>Without FlowCraft:</strong> Shows real data from data.json file</li>
+      <li><strong>With FlowCraft mock rule:</strong> Shows mocked data you configured</li>
+    </ul>
+  </div>
+
+  <script src="./app.js"></script>
+</body>
+</html>
