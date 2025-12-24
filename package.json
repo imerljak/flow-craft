@@ -1,6 +1,6 @@
 {
   "name": "flowcraft",
-  "version": "1.0.0",
+  "version": "0.1.0",
   "description": "Privacy-first HTTP manipulation toolkit for developers",
   "type": "module",
   "scripts": {

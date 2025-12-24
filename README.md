@@ -181,7 +181,9 @@ Contributions are welcome! Please read our [Contributing Guide](CONTRIBUTING.md)
 
 ## 📋 Roadmap
 
-### Phase 1 (MVP) - ✅ COMPLETE
+### Current Version: 0.1.0 (Beta)
+
+**Core Features Complete:**
 - ✅ Core rule engine
 - ✅ Header modification
 - ✅ Storage layer
@@ -191,17 +193,18 @@ Contributions are welcome! Please read our [Contributing Guide](CONTRIBUTING.md)
 - ✅ Query parameter modification
 - ✅ Request blocking
 
-### Phase 2 - Current
+### Toward 1.0.0 (Stable Release)
 - Request/response viewer/logger
 - Rule templates library
 - Import/export rules UI
 - Rule conflict detection UI
 - Performance optimization
-- Chrome Web Store deployment
+- Chrome Web Store publication
+- Enhanced documentation and examples
 
-### Phase 3
+### Future Enhancements (Post-1.0.0)
 - AI-assisted rule suggestions
-- Pattern detection
+- Pattern detection and auto-generation
 - WebSocket interception
 - GraphQL tools
 - Request collection/history

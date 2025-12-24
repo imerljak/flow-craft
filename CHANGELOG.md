@@ -7,7 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [1.0.0] - 2025-12-24
+## [0.1.0] - 2025-12-24
+
+**Initial beta release**
 
 ### Added
 - **Response Mocking Feature** ✅
@@ -117,5 +119,18 @@ Security-related changes
 
 ---
 
-[Unreleased]: https://github.com/imerljak/flow-craft/compare/v1.0.0...HEAD
-[1.0.0]: https://github.com/imerljak/flow-craft/releases/tag/v1.0.0
+## Roadmap to 1.0.0
+
+Before marking the extension as production-ready (1.0.0), we plan to add:
+
+- **Request/Response Viewer** - Inspect intercepted requests and responses
+- **Rule Templates Library** - Pre-built rules for common scenarios
+- **Rule Import/Export** - Share rules between installations
+- **Performance Optimizations** - Optimize for large rule sets
+- **Enhanced Documentation** - More examples and use cases
+- **Chrome Web Store Publication** - Official store listing
+
+---
+
+[Unreleased]: https://github.com/imerljak/flow-craft/compare/v0.1.0...HEAD
+[0.1.0]: https://github.com/imerljak/flow-craft/releases/tag/v0.1.0
