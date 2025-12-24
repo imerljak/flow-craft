@@ -5,6 +5,15 @@ All notable changes to FlowCraft will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.1](https://github.com/imerljak/flow-craft/compare/v0.1.0...v0.1.1) (2025-12-24)
+
+
+### Bug Fixes
+
+* convert relative URLs to absolute for exact pattern matching ([86bc344](https://github.com/imerljak/flow-craft/commit/86bc344cc61554d909f8ff58d451d431a1f18223))
+* resolve strict mode violation in rule deletion E2E test ([fb3a555](https://github.com/imerljak/flow-craft/commit/fb3a555ae0205deb5b78a2ad999037b65edfb6ea))
+* update release workflow to use workflow_run trigger ([2b7bfcd](https://github.com/imerljak/flow-craft/commit/2b7bfcd0180b2a7df0b79a5704953cc205931e4d))
+
 ## [Unreleased]
 
 ## [0.1.0] - 2025-12-24
