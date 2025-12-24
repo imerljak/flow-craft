@@ -15,7 +15,9 @@
       "Bash(grep:*)",
       "Bash(pkill:*)",
       "Bash(ls:*)",
-      "Bash(cat:*)"
+      "Bash(cat:*)",
+      "Bash(npm run lint)",
+      "Bash(npm run lint:*)"
     ]
   }
 }
