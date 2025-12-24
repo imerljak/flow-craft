@@ -89,36 +89,44 @@ git checkout main
 git pull
 ```
 
-### 3. Release Please Creates/Updates Release PR
+### 3. CI/CD Checks Run
 
-After pushing to main, Release Please automatically:
+After pushing to main, GitHub Actions automatically runs:
+- **CI Pipeline**: Type checking, linting, unit tests, build validation
+- **Security Checks**: Dependency audit, CodeQL analysis, license verification
+
+The release workflow waits for all checks to pass before proceeding.
+
+### 4. Release Please Creates/Updates Release PR
+
+Once CI and security checks pass, Release Please automatically:
 - Analyzes commits since last release
 - Determines version bump
 - Creates or updates a "chore: release X.Y.Z" PR
 - Updates CHANGELOG.md
 - Bumps version in package.json and manifest.json
 
-### 4. Review the Release PR
+### 5. Review the Release PR
 
 Check the automatically created release PR:
 - [ ] Version bump is correct
 - [ ] CHANGELOG.md includes all changes
 - [ ] No unexpected changes
-- [ ] All CI checks passing
+- [ ] All CI and security checks passed
 
-### 5. Merge the Release PR
+### 6. Merge the Release PR
 
 When ready to release:
 1. Approve the release PR
 2. Merge it to main
-3. Release Please will:
+3. Release Please will (after CI/security checks pass again):
    - Create a git tag (e.g., `v1.0.0`)
    - Create a GitHub Release
    - Build the extension
    - Upload `flowcraft-v1.0.0.zip`
    - Generate and upload `checksums.txt`
 
-### 6. Verify the Release
+### 7. Verify the Release
 
 1. Check https://github.com/imerljak/flow-craft/releases
 2. Download the ZIP and verify it works
@@ -169,6 +177,16 @@ GitHub Actions workflow that:
 - Builds and publishes on PR merge
 
 ## Troubleshooting
+
+### Release Workflow Waiting/Stuck
+
+**Cause**: CI or security checks haven't completed or failed
+
+**Fix**:
+1. Check the [Actions tab](https://github.com/imerljak/flow-craft/actions) for workflow status
+2. Ensure both "CI Pipeline" and "Security & Dependency Checks" workflows passed
+3. If checks failed, fix the issues and push again
+4. The release workflow will automatically retry when checks pass
 
 ### Release PR Not Created
 
@@ -232,9 +250,10 @@ We follow [Semantic Versioning](https://semver.org/):
 
 1. **Always use conventional commits** - This ensures proper version bumping
 2. **One feature per commit** - Makes changelogs clearer
-3. **Review release PRs carefully** - They auto-update as you push to main
-4. **Don't manually edit version files** - Let Release Please handle it
-5. **Test before merging release PR** - All artifacts are built on merge
+3. **Ensure CI/security checks pass** - Release workflow waits for all checks
+4. **Review release PRs carefully** - They auto-update as you push to main
+5. **Don't manually edit version files** - Let Release Please handle it
+6. **Test before merging release PR** - All artifacts are built on merge
 
 ## Benefits of Release Please
 

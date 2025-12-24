@@ -8,9 +8,47 @@ on:
 permissions:
   contents: write
   pull-requests: write
+  actions: read
 
 jobs:
+  # Wait for CI and Security checks to pass before creating/publishing releases
+  await-checks:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Wait for CI Pipeline
+        uses: lewagon/wait-on-check-action@v1.3.4
+        with:
+          ref: ${{ github.ref }}
+          check-name: 'quality-gate'
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+          wait-interval: 10
+
+      - name: Wait for Security Checks - Dependency Audit
+        uses: lewagon/wait-on-check-action@v1.3.4
+        with:
+          ref: ${{ github.ref }}
+          check-name: 'dependency-audit'
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+          wait-interval: 10
+
+      - name: Wait for Security Checks - CodeQL
+        uses: lewagon/wait-on-check-action@v1.3.4
+        with:
+          ref: ${{ github.ref }}
+          check-name: 'codeql-analysis'
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+          wait-interval: 10
+
+      - name: Wait for Security Checks - License Check
+        uses: lewagon/wait-on-check-action@v1.3.4
+        with:
+          ref: ${{ github.ref }}
+          check-name: 'license-check'
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+          wait-interval: 10
+
   release-please:
+    needs: await-checks
     runs-on: ubuntu-latest
     steps:
       - uses: googleapis/release-please-action@v4
