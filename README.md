@@ -151,8 +151,8 @@ src/
 
 FlowCraft follows Test-Driven Development (TDD) principles:
 
-- **Unit Tests**: Vitest + React Testing Library (215 tests)
-- **E2E Tests**: Playwright (51 tests, 50 passing)
+- **Unit Tests**: Vitest + React Testing Library (215 tests) ✅
+- **E2E Tests**: Playwright (51 tests) ✅
 - **Coverage**: Minimum 75% code coverage required (currently >83%)
 
 ```bash

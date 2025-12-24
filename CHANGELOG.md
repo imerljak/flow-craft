@@ -33,7 +33,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Pattern-based matching (exact, wildcard, regex)
 - **Request Blocking** ✅
   - Block unwanted requests by pattern
-- Comprehensive Playwright E2E test suite (51 tests, 50 passing)
+- Comprehensive Playwright E2E test suite (51 tests, 100% passing) ✅
   - Basic popup functionality tests
   - Rule management tests (create, edit, delete, toggle)
   - Form validation tests
