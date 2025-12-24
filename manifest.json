@@ -2,7 +2,9 @@
   "manifest_version": 3,
   "name": "FlowCraft",
   "version": "1.0.0",
-  "description": "Privacy-first HTTP manipulation toolkit for developers",
+  "description": "Privacy-first HTTP manipulation toolkit for developers. Mock APIs, modify headers, inject scripts, and control requests locally.",
+  "author": "FlowCraft Contributors",
+  "homepage_url": "https://github.com/imerljak/flow-craft",
   "permissions": [
     "storage",
     "declarativeNetRequest",
