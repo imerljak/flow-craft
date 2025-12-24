@@ -1,38 +1,65 @@
 name: Release Please
 
 on:
-  push:
+  workflow_run:
+    workflows:
+      - "CI Pipeline"
+      - "Security & Dependency Checks"
+    types:
+      - completed
     branches:
       - main
 
 permissions:
   contents: write
   pull-requests: write
-  actions: read
 
 jobs:
-  # Wait for CI and Security quality gates to pass before creating/publishing releases
-  await-quality-gates:
+  # Check that both CI and Security workflows completed successfully
+  check-prerequisites:
     runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    outputs:
+      all_passed: ${{ steps.check.outputs.all_passed }}
     steps:
-      - name: Wait for CI Quality Gate
-        uses: lewagon/wait-on-check-action@v1.3.4
+      - name: Check both workflows completed
+        id: check
+        uses: actions/github-script@v7
         with:
-          ref: ${{ github.ref }}
-          check-name: 'CI Quality Gate'
-          repo-token: ${{ secrets.GITHUB_TOKEN }}
-          wait-interval: 10
+          script: |
+            const workflows = ['CI Pipeline', 'Security & Dependency Checks'];
+            const results = {};
 
-      - name: Wait for Security Quality Gate
-        uses: lewagon/wait-on-check-action@v1.3.4
-        with:
-          ref: ${{ github.ref }}
-          check-name: 'Security Quality Gate'
-          repo-token: ${{ secrets.GITHUB_TOKEN }}
-          wait-interval: 10
+            for (const workflowName of workflows) {
+              const runs = await github.rest.actions.listWorkflowRunsForRepo({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                workflow_id: workflowName.toLowerCase().replace(/\s+/g, '-') + '.yml',
+                branch: 'main',
+                per_page: 1,
+                event: 'push'
+              });
+
+              if (runs.data.workflow_runs.length > 0) {
+                const latestRun = runs.data.workflow_runs[0];
+                console.log(`${workflowName}: ${latestRun.conclusion} (${latestRun.head_sha})`);
+                results[workflowName] = latestRun.conclusion === 'success';
+              } else {
+                console.log(`${workflowName}: No runs found`);
+                results[workflowName] = false;
+              }
+            }
+
+            const allPassed = Object.values(results).every(r => r === true);
+            console.log(`All workflows passed: ${allPassed}`);
+            core.setOutput('all_passed', allPassed);
+
+            if (!allPassed) {
+              core.setFailed('Not all required workflows have passed');
+            }
 
   release-please:
-    needs: await-quality-gates
+    needs: check-prerequisites
     runs-on: ubuntu-latest
     steps:
       - uses: googleapis/release-please-action@v4
