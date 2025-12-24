@@ -110,7 +110,15 @@ export const MAIN_WORLD_INTERCEPTOR = `
       await waitForBridge();
     }
 
-    const url = typeof input === 'string' ? input : input instanceof URL ? input.href : input.url;
+    // Convert input to absolute URL for matching
+    let url = typeof input === 'string' ? input : input instanceof URL ? input.href : input.url;
+
+    // Convert relative URLs to absolute URLs
+    if (!url.startsWith('http://') && !url.startsWith('https://') && !url.startsWith('//')) {
+      const absoluteUrl = new URL(url, window.location.href);
+      url = absoluteUrl.href;
+    }
+
     const mockResponse = await checkForMock(url);
 
     if (mockResponse) {
@@ -147,7 +155,14 @@ export const MAIN_WORLD_INTERCEPTOR = `
         await waitForBridge();
       }
 
-      const mockResponse = await checkForMock(requestUrl);
+      // Convert relative URLs to absolute URLs
+      let absoluteUrl = requestUrl;
+      if (!absoluteUrl.startsWith('http://') && !absoluteUrl.startsWith('https://') && !absoluteUrl.startsWith('//')) {
+        const url = new URL(absoluteUrl, window.location.href);
+        absoluteUrl = url.href;
+      }
+
+      const mockResponse = await checkForMock(absoluteUrl);
 
       if (mockResponse) {
         console.log('[FlowCraft MAIN] Mocking XHR:', requestUrl, mockResponse);
