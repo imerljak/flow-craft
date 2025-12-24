@@ -193,6 +193,9 @@ test.describe('FlowCraft - Rule Management (Options Page)', () => {
     await expect(page.getByTestId('delete-confirm-modal')).toBeVisible({ timeout: 2000 });
     await page.getByTestId('delete-confirm-btn').click();
 
+    // Wait for modal to close before checking rule deletion
+    await expect(page.getByTestId('delete-confirm-modal')).not.toBeVisible();
+
     // Verify rule is gone
     await expect(page.locator('text=Rule to Delete')).not.toBeVisible();
 
