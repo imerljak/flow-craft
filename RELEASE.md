@@ -89,17 +89,17 @@ git checkout main
 git pull
 ```
 
-### 3. CI/CD Checks Run
+### 3. Quality Gates Run
 
 After pushing to main, GitHub Actions automatically runs:
-- **CI Pipeline**: Type checking, linting, unit tests, build validation
-- **Security Checks**: Dependency audit, CodeQL analysis, license verification
+- **CI Quality Gate**: Type checking, linting, unit tests, E2E tests, build validation
+- **Security Quality Gate**: Dependency audit, CodeQL analysis, license compliance
 
-The release workflow waits for all checks to pass before proceeding.
+The release workflow waits for both quality gates to pass before proceeding.
 
 ### 4. Release Please Creates/Updates Release PR
 
-Once CI and security checks pass, Release Please automatically:
+Once both quality gates pass, Release Please automatically:
 - Analyzes commits since last release
 - Determines version bump
 - Creates or updates a "chore: release X.Y.Z" PR
@@ -112,14 +112,14 @@ Check the automatically created release PR:
 - [ ] Version bump is correct
 - [ ] CHANGELOG.md includes all changes
 - [ ] No unexpected changes
-- [ ] All CI and security checks passed
+- [ ] Both quality gates (CI & Security) passed
 
 ### 6. Merge the Release PR
 
 When ready to release:
 1. Approve the release PR
 2. Merge it to main
-3. Release Please will (after CI/security checks pass again):
+3. Release Please will (after both quality gates pass again):
    - Create a git tag (e.g., `v1.0.0`)
    - Create a GitHub Release
    - Build the extension
@@ -180,13 +180,15 @@ GitHub Actions workflow that:
 
 ### Release Workflow Waiting/Stuck
 
-**Cause**: CI or security checks haven't completed or failed
+**Cause**: Quality gates haven't completed or failed
 
 **Fix**:
 1. Check the [Actions tab](https://github.com/imerljak/flow-craft/actions) for workflow status
-2. Ensure both "CI Pipeline" and "Security & Dependency Checks" workflows passed
-3. If checks failed, fix the issues and push again
-4. The release workflow will automatically retry when checks pass
+2. Ensure both quality gates passed:
+   - "CI Quality Gate" (from CI Pipeline workflow)
+   - "Security Quality Gate" (from Security & Dependency Checks workflow)
+3. If a quality gate failed, fix the issues and push again
+4. The release workflow will automatically proceed when both gates pass
 
 ### Release PR Not Created
 
@@ -250,7 +252,7 @@ We follow [Semantic Versioning](https://semver.org/):
 
 1. **Always use conventional commits** - This ensures proper version bumping
 2. **One feature per commit** - Makes changelogs clearer
-3. **Ensure CI/security checks pass** - Release workflow waits for all checks
+3. **Ensure quality gates pass** - Release workflow waits for CI & Security gates
 4. **Review release PRs carefully** - They auto-update as you push to main
 5. **Don't manually edit version files** - Let Release Please handle it
 6. **Test before merging release PR** - All artifacts are built on merge

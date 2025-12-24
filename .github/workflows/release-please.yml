@@ -11,44 +11,28 @@ permissions:
   actions: read
 
 jobs:
-  # Wait for CI and Security checks to pass before creating/publishing releases
-  await-checks:
+  # Wait for CI and Security quality gates to pass before creating/publishing releases
+  await-quality-gates:
     runs-on: ubuntu-latest
     steps:
-      - name: Wait for CI Pipeline
+      - name: Wait for CI Quality Gate
         uses: lewagon/wait-on-check-action@v1.3.4
         with:
           ref: ${{ github.ref }}
-          check-name: 'quality-gate'
+          check-name: 'CI Quality Gate'
           repo-token: ${{ secrets.GITHUB_TOKEN }}
           wait-interval: 10
 
-      - name: Wait for Security Checks - Dependency Audit
+      - name: Wait for Security Quality Gate
         uses: lewagon/wait-on-check-action@v1.3.4
         with:
           ref: ${{ github.ref }}
-          check-name: 'dependency-audit'
-          repo-token: ${{ secrets.GITHUB_TOKEN }}
-          wait-interval: 10
-
-      - name: Wait for Security Checks - CodeQL
-        uses: lewagon/wait-on-check-action@v1.3.4
-        with:
-          ref: ${{ github.ref }}
-          check-name: 'codeql-analysis'
-          repo-token: ${{ secrets.GITHUB_TOKEN }}
-          wait-interval: 10
-
-      - name: Wait for Security Checks - License Check
-        uses: lewagon/wait-on-check-action@v1.3.4
-        with:
-          ref: ${{ github.ref }}
-          check-name: 'license-check'
+          check-name: 'Security Quality Gate'
           repo-token: ${{ secrets.GITHUB_TOKEN }}
           wait-interval: 10
 
   release-please:
-    needs: await-checks
+    needs: await-quality-gates
     runs-on: ubuntu-latest
     steps:
       - uses: googleapis/release-please-action@v4

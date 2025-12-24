@@ -82,3 +82,36 @@ jobs:
         run: |
           npx license-checker --summary
           npx license-checker --onlyAllow "MIT;Apache-2.0;BSD-2-Clause;BSD-3-Clause;ISC;0BSD" || echo "License check warning - review required"
+
+  # Security Quality Gate - All security checks must pass
+  security-gate:
+    name: Security Quality Gate
+    runs-on: ubuntu-latest
+    needs:
+      - dependency-audit
+      - codeql-analysis
+      - license-check
+    if: always()
+    steps:
+      - name: Check all security jobs
+        run: |
+          echo "dependency-audit: ${{ needs.dependency-audit.result }}"
+          echo "codeql-analysis: ${{ needs.codeql-analysis.result }}"
+          echo "license-check: ${{ needs.license-check.result }}"
+
+          if [ "${{ needs.dependency-audit.result }}" != "success" ]; then
+            echo "❌ Dependency audit failed"
+            exit 1
+          fi
+
+          if [ "${{ needs.codeql-analysis.result }}" != "success" ]; then
+            echo "❌ CodeQL analysis failed"
+            exit 1
+          fi
+
+          if [ "${{ needs.license-check.result }}" != "success" ]; then
+            echo "❌ License check failed"
+            exit 1
+          fi
+
+          echo "✅ All security checks passed!"
