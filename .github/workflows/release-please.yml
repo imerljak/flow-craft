@@ -1,0 +1,93 @@
+name: Release Please
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  release-please:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: googleapis/release-please-action@v4
+        id: release
+        with:
+          release-type: node
+          extra-files: |
+            manifest.json
+
+      # Build and upload release artifacts when a release is created
+      - uses: actions/checkout@v4
+        if: ${{ steps.release.outputs.release_created }}
+
+      - name: Setup Node.js
+        if: ${{ steps.release.outputs.release_created }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        if: ${{ steps.release.outputs.release_created }}
+        run: npm ci
+
+      - name: Run quality checks
+        if: ${{ steps.release.outputs.release_created }}
+        run: |
+          npm run type-check
+          npm run lint
+          npm run test:coverage
+
+      - name: Build extension
+        if: ${{ steps.release.outputs.release_created }}
+        run: npm run build
+
+      - name: Create release package
+        if: ${{ steps.release.outputs.release_created }}
+        run: |
+          cd dist
+          zip -r ../flowcraft-${{ steps.release.outputs.tag_name }}.zip .
+          cd ..
+
+      - name: Generate checksums
+        if: ${{ steps.release.outputs.release_created }}
+        run: |
+          sha256sum flowcraft-${{ steps.release.outputs.tag_name }}.zip > checksums.txt
+
+      - name: Upload release artifacts
+        if: ${{ steps.release.outputs.release_created }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release upload ${{ steps.release.outputs.tag_name }} \
+            flowcraft-${{ steps.release.outputs.tag_name }}.zip \
+            checksums.txt
+
+      - name: Comment on Release
+        if: ${{ steps.release.outputs.release_created }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release edit ${{ steps.release.outputs.tag_name }} --notes "$(cat <<'EOF'
+          ## Installation
+
+          ### For Users
+          Download \`flowcraft-${{ steps.release.outputs.tag_name }}.zip\` and:
+          1. Extract the ZIP file
+          2. Open Chrome and navigate to \`chrome://extensions/\`
+          3. Enable "Developer mode"
+          4. Click "Load unpacked"
+          5. Select the extracted folder
+
+          ### For Developers
+          See [BUILD.md](https://github.com/imerljak/flow-craft/blob/main/BUILD.md) for development setup.
+
+          ## Verification
+          SHA256 checksums are available in \`checksums.txt\`.
+
+          EOF
+          )"

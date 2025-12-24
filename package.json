@@ -15,7 +15,6 @@
     "lint:fix": "npm run lint -- --fix",
     "format": "prettier --write \"src/**/*.{ts,tsx,json,css,md}\"",
     "type-check": "tsc --noEmit",
-    "package": "npm run build && node scripts/package.js",
     "prepare": "husky install"
   },
   "dependencies": {
