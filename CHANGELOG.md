@@ -33,14 +33,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Pattern-based matching (exact, wildcard, regex)
 - **Request Blocking** ✅
   - Block unwanted requests by pattern
-- Comprehensive Playwright E2E test suite (47 tests)
+- Comprehensive Playwright E2E test suite (51 tests, 50 passing)
   - Basic popup functionality tests
   - Rule management tests (create, edit, delete, toggle)
   - Form validation tests
   - Data persistence tests
   - New features tests (query params, script injection, response mocking)
   - Local file mocking tests
-- Comprehensive unit test suite (57 tests)
+  - URL pattern matching tests (wildcard, regex, exact)
+- Comprehensive unit test suite (215 tests)
   - Storage layer tests
   - Rule engine tests
   - Request interceptor tests
