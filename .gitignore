@@ -146,3 +146,4 @@ playwright-report
 
 # Test results
 test-results.claude/**
+.claude/**
