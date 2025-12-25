@@ -7,17 +7,48 @@ import { Storage } from '@storage/index';
 import { RequestInterceptor } from './requestInterceptor';
 import { ScriptInjector } from './scriptInjector';
 import { ResponseMocker } from './responseMocker';
+import { HttpLogger } from './httpLogger';
+import { ConflictDetector } from './conflictDetector';
 import browser from 'webextension-polyfill';
-import { Rule } from '@shared/types';
+import { Rule, LogActionType } from '@shared/types';
 
 /**
  * Message types for runtime communication
  */
 interface BackgroundMessage {
-  type: 'GET_RULES' | 'SAVE_RULE' | 'DELETE_RULE' | 'SYNC_RULES' | 'GET_MOCK_RULES' | 'FIND_MOCK_RULE' | 'INJECT_MAIN_WORLD';
-  data?: Rule | string;
+  type:
+    | 'GET_RULES'
+    | 'SAVE_RULE'
+    | 'DELETE_RULE'
+    | 'SYNC_RULES'
+    | 'GET_MOCK_RULES'
+    | 'FIND_MOCK_RULE'
+    | 'INJECT_MAIN_WORLD'
+    | 'GET_LOGS'
+    | 'GET_FILTERED_LOGS'
+    | 'CLEAR_LOGS'
+    | 'EXPORT_LOGS'
+    | 'EXPORT_LOGS_CSV'
+    | 'GET_LOG_STATS'
+    | 'LOG_REQUEST'
+    | 'LOG_RESPONSE'
+    | 'EXPORT_RULES'
+    | 'IMPORT_RULES'
+    | 'DETECT_CONFLICTS'
+    | 'DETECT_RULE_CONFLICTS';
+  data?: Rule | string | unknown;
   url?: string;
   tabId?: number;
+  filter?: unknown;
+  logId?: string;
+  request?: unknown;
+  response?: unknown;
+  interception?: unknown;
+  includeSettings?: boolean;
+  includeGroups?: boolean;
+  ruleIds?: string[];
+  options?: unknown;
+  rule?: Rule;
 }
 
 /**
@@ -25,6 +56,7 @@ interface BackgroundMessage {
  */
 async function initializeExtension(): Promise<void> {
   await Storage.initialize();
+  await HttpLogger.initialize();
   await syncRules();
 }
 
@@ -77,8 +109,17 @@ browser.runtime.onStartup.addListener(async (): Promise<void> => {
 
 // Listen for storage changes and sync rules
 browser.storage.onChanged.addListener((changes, areaName): void => {
-  if (areaName === 'local' && changes.rules) {
-    void syncRules();
+  if (areaName === 'local') {
+    if (changes.rules) {
+      void syncRules();
+    }
+    if (changes.settings) {
+      // Update logger settings
+      void (async () => {
+        const settings = await Storage.getSettings();
+        await HttpLogger.updateSettings(settings);
+      })();
+    }
   }
 });
 
@@ -155,6 +196,90 @@ browser.runtime.onMessage.addListener((message: unknown, _sender, sendResponse):
           }
           break;
         }
+        case 'GET_LOGS': {
+          const logs = await HttpLogger.getLogs();
+          sendResponse({ success: true, logs });
+          break;
+        }
+        case 'GET_FILTERED_LOGS': {
+          const logs = await HttpLogger.getFilteredLogs(msg.filter as Parameters<typeof HttpLogger.getFilteredLogs>[0]);
+          sendResponse({ success: true, logs });
+          break;
+        }
+        case 'CLEAR_LOGS': {
+          await HttpLogger.clearLogs();
+          sendResponse({ success: true });
+          break;
+        }
+        case 'EXPORT_LOGS': {
+          const json = await HttpLogger.exportLogs(msg.filter as Parameters<typeof HttpLogger.exportLogs>[0]);
+          sendResponse({ success: true, data: json });
+          break;
+        }
+        case 'EXPORT_LOGS_CSV': {
+          const csv = await HttpLogger.exportLogsCSV(msg.filter as Parameters<typeof HttpLogger.exportLogsCSV>[0]);
+          sendResponse({ success: true, data: csv });
+          break;
+        }
+        case 'GET_LOG_STATS': {
+          const stats = await HttpLogger.getStats();
+          sendResponse({ success: true, stats });
+          break;
+        }
+        case 'LOG_REQUEST': {
+          const logId = await HttpLogger.logRequest(
+            msg.request as Parameters<typeof HttpLogger.logRequest>[0],
+            msg.interception as Parameters<typeof HttpLogger.logRequest>[1]
+          );
+          sendResponse({ success: true, logId });
+          break;
+        }
+        case 'LOG_RESPONSE': {
+          await HttpLogger.logResponse(
+            msg.logId as string,
+            msg.response as Parameters<typeof HttpLogger.logResponse>[1]
+          );
+          sendResponse({ success: true });
+          break;
+        }
+        case 'EXPORT_RULES': {
+          const exportData = await Storage.exportRules({
+            includeSettings: msg.includeSettings ?? false,
+            includeGroups: msg.includeGroups ?? true,
+            ruleIds: msg.ruleIds,
+          });
+          const jsonString = JSON.stringify(exportData, null, 2);
+          sendResponse({ success: true, data: jsonString });
+          break;
+        }
+        case 'IMPORT_RULES': {
+          const result = await Storage.importRules(
+            msg.data,
+            msg.options as Parameters<typeof Storage.importRules>[1]
+          );
+          // Sync rules after import to apply changes
+          if (result.success && result.rulesImported > 0) {
+            await syncRules();
+          }
+          sendResponse({ success: true, result });
+          break;
+        }
+        case 'DETECT_CONFLICTS': {
+          const rules = await Storage.getRules();
+          const conflicts = ConflictDetector.detectConflicts(rules);
+          sendResponse({ success: true, conflicts });
+          break;
+        }
+        case 'DETECT_RULE_CONFLICTS': {
+          if (!msg.rule) {
+            sendResponse({ success: false, error: 'Rule is required' });
+            break;
+          }
+          const allRules = await Storage.getRules();
+          const conflicts = ConflictDetector.detectConflictsForRule(msg.rule, allRules);
+          sendResponse({ success: true, conflicts });
+          break;
+        }
         default: {
           sendResponse({ success: false, error: 'Unknown message type' });
         }
@@ -200,3 +325,57 @@ browser.webNavigation.onCommitted.addListener(async (details) => {
     void ScriptInjector.handleNavigation(details.tabId, details.url);
   }
 });
+
+// Listen for declarativeNetRequest rule matches (for logging)
+// Note: This requires declarativeNetRequestFeedback permission
+if (chrome.declarativeNetRequest?.onRuleMatchedDebug) {
+  chrome.declarativeNetRequest.onRuleMatchedDebug.addListener((details) => {
+    // Get the matched rule
+    const rule = RequestInterceptor.getRuleByNumericId(details.rule.ruleId);
+    if (!rule) return;
+
+    // Determine the action type from the rule
+    let action: LogActionType = LogActionType.MODIFIED;
+    const actionDetails: Record<string, unknown> = {};
+
+    if (rule.action.type === 'url_redirect') {
+      action = LogActionType.REDIRECTED;
+      actionDetails.redirectUrl = rule.action.redirectUrl;
+    } else if (rule.action.type === 'request_block') {
+      action = LogActionType.BLOCKED;
+    } else if (rule.action.type === 'header_modification') {
+      action = LogActionType.MODIFIED;
+      actionDetails.modifiedHeaders = rule.action.headers.map((h) => h.name);
+    } else if (rule.action.type === 'query_param') {
+      action = LogActionType.MODIFIED;
+      actionDetails.modifiedParams = rule.action.params.map((p) => p.name);
+    }
+
+    // Log the request (fire and forget)
+    void HttpLogger.logRequest(
+      {
+        url: details.request.url,
+        method: details.request.method as Parameters<typeof HttpLogger.logRequest>[0]['method'],
+        tabId: details.request.tabId,
+        frameId: details.request.frameId,
+      },
+      {
+        action,
+        matchedRuleId: rule.id,
+        matchedRuleName: rule.name,
+        actionDetails,
+      }
+    ).then((logId) => {
+      // For blocks and redirects, immediately complete the log
+      if (action === LogActionType.BLOCKED) {
+        void HttpLogger.logResponse(logId, { status: 0, statusText: 'Blocked by Rule' });
+      } else if (action === LogActionType.REDIRECTED && actionDetails.redirectUrl) {
+        void HttpLogger.logResponse(logId, {
+          status: 302,
+          statusText: 'Redirected',
+        });
+      }
+      // For modifications, the response will be logged by fetch/XHR interceptors
+    });
+  });
+}

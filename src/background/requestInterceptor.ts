@@ -30,6 +30,9 @@ const DEFAULT_RESOURCE_TYPES = [
  * and manages dynamic rule updates
  */
 export class RequestInterceptor {
+  // Map numeric IDs to FlowCraft rule IDs for logging
+  private static ruleIdMap: Map<number, string> = new Map();
+  private static flowCraftRulesMap: Map<string, Rule> = new Map();
   /**
    * Convert a FlowCraft rule to Browser declarativeNetRequest format
    */
@@ -239,6 +242,10 @@ export class RequestInterceptor {
       const existingRules = await Browser.declarativeNetRequest.getDynamicRules();
       const existingRuleIds = existingRules.map((rule) => rule.id);
 
+      // Clear existing mappings
+      this.ruleIdMap.clear();
+      this.flowCraftRulesMap.clear();
+
       // Convert enabled FlowCraft rules to Chrome format
       const enabledRules = rules.filter((rule) => rule.enabled);
       const chromeRules: BrowserRule[] = [];
@@ -246,9 +253,13 @@ export class RequestInterceptor {
       for (let i = 0; i < enabledRules.length; i++) {
         const rule = enabledRules[i];
         if (rule) {
-          const chromeRule = this.convertToDeclarativeNetRequestRule(rule, i + 1);
+          const numericId = i + 1;
+          const chromeRule = this.convertToDeclarativeNetRequestRule(rule, numericId);
           if (chromeRule) {
             chromeRules.push(chromeRule);
+            // Store mapping for logging
+            this.ruleIdMap.set(numericId, rule.id);
+            this.flowCraftRulesMap.set(rule.id, rule);
           }
         }
       }
@@ -262,6 +273,15 @@ export class RequestInterceptor {
       console.error('Failed to update dynamic rules:', error);
       throw error;
     }
+  }
+
+  /**
+   * Get FlowCraft rule by numeric ID (for logging)
+   */
+  static getRuleByNumericId(numericId: number): Rule | null {
+    const flowCraftId = this.ruleIdMap.get(numericId);
+    if (!flowCraftId) return null;
+    return this.flowCraftRulesMap.get(flowCraftId) || null;
   }
 
   /**
