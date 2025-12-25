@@ -52,7 +52,7 @@ test.describe('FlowCraft - Conflict Detection', () => {
     await page.fill('input[placeholder*="CORS"]', 'Rule 2');
     await page.fill('input[placeholder*="api.example.com"]', 'https://api.example.com/test');
     await page.selectOption('select#rule-type', { value: 'url_redirect' });
-    await page.fill('input[placeholder*="https://example.com"]', 'https://redirect.com');
+    await page.fill('input[placeholder*="new.example.com"]', 'https://redirect.com');
     await page.locator('button:has-text("Save Rule")').click();
     await expect(page.getByTestId('rule-editor-drawer')).not.toBeVisible({ timeout: 3000 });
 
@@ -81,7 +81,7 @@ test.describe('FlowCraft - Conflict Detection', () => {
     await page.fill('input[placeholder*="CORS"]', 'Redirect Rule');
     await page.fill('input[placeholder*="api.example.com"]', 'https://api.example.com/conflict');
     await page.selectOption('select#rule-type', { value: 'url_redirect' });
-    await page.fill('input[placeholder*="https://example.com"]', 'https://redirect.com');
+    await page.fill('input[placeholder*="new.example.com"]', 'https://redirect.com');
     await page.locator('button:has-text("Save Rule")').click();
     await expect(page.getByTestId('rule-editor-drawer')).not.toBeVisible({ timeout: 3000 });
 
@@ -118,7 +118,7 @@ test.describe('FlowCraft - Conflict Detection', () => {
     await page.fill('input[placeholder*="CORS"]', 'Second Rule');
     await page.fill('input[placeholder*="api.example.com"]', 'https://test.com/api');
     await page.selectOption('select#rule-type', { value: 'url_redirect' });
-    await page.fill('input[placeholder*="https://example.com"]', 'https://redirect.com');
+    await page.fill('input[placeholder*="new.example.com"]', 'https://redirect.com');
 
     // Wait for conflict check in editor (debounced 500ms)
     await page.waitForTimeout(1000);
@@ -151,7 +151,7 @@ test.describe('FlowCraft - Conflict Detection', () => {
     await page.fill('input[placeholder*="CORS"]', 'Rule B');
     await page.fill('input[placeholder*="api.example.com"]', 'https://siteB.com');
     await page.selectOption('select#rule-type', { value: 'url_redirect' });
-    await page.fill('input[placeholder*="https://example.com"]', 'https://redirect.com');
+    await page.fill('input[placeholder*="new.example.com"]', 'https://redirect.com');
     await page.locator('button:has-text("Save Rule")').click();
     await expect(page.getByTestId('rule-editor-drawer')).not.toBeVisible({ timeout: 3000 });
 

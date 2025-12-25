@@ -109,6 +109,7 @@ export const TemplateBrowser: React.FC<TemplateBrowserProps> = ({
         <div className="mb-4">
           <div className="relative">
             <input
+              data-testid="template-search-input"
               type="text"
               placeholder="Search templates..."
               value={searchQuery}
@@ -137,6 +138,7 @@ export const TemplateBrowser: React.FC<TemplateBrowserProps> = ({
             {filteredTemplates.map((template) => (
               <div
                 key={template.id}
+                data-testid={`template-card-${template.id}`}
                 className={`bg-white dark:bg-neutral-800 rounded-lg border border-neutral-200 dark:border-neutral-700 p-4 cursor-pointer transition-all ${
                   selectedTemplate?.id === template.id
                     ? 'ring-2 ring-primary-500 border-primary-500'
@@ -172,6 +174,7 @@ export const TemplateBrowser: React.FC<TemplateBrowserProps> = ({
 
                 {/* Use Button */}
                 <Button
+                  data-testid={`use-template-btn-${template.id}`}
                   variant="primary"
                   size="sm"
                   onClick={(e) => {

@@ -50,7 +50,7 @@ test.describe('FlowCraft - Network Logger', () => {
     const page = await ExtensionUtils.openOptions(context, extensionId);
 
     // Click Network tab
-    const networkTab = page.locator('button').filter({ hasText: 'Network' }).first();
+    const networkTab = page.getByTestId('network-tab');
     await networkTab.click();
 
     // Verify Network view content is shown (look for any network-related content)
@@ -67,7 +67,7 @@ test.describe('FlowCraft - Network Logger', () => {
     const page = await ExtensionUtils.openOptions(context, extensionId);
 
     // Go to Network tab
-    const networkTab = page.locator('button').filter({ hasText: 'Network' }).first();
+    const networkTab = page.getByTestId('network-tab');
     await networkTab.click();
     await page.waitForTimeout(300);
 
@@ -82,7 +82,7 @@ test.describe('FlowCraft - Network Logger', () => {
     const page = await ExtensionUtils.openOptions(context, extensionId);
 
     // Go to Settings tab
-    const settingsTab = page.locator('button').filter({ hasText: 'Settings' }).first();
+    const settingsTab = page.getByTestId('settings-tab');
     await settingsTab.click();
     await page.waitForTimeout(300);
 
@@ -99,7 +99,7 @@ test.describe('FlowCraft - Network Logger', () => {
     }
 
     // Go back to Network tab
-    const networkTab = page.locator('button').filter({ hasText: 'Network' }).first();
+    const networkTab = page.getByTestId('network-tab');
     await networkTab.click();
     await page.waitForTimeout(300);
 
@@ -114,7 +114,7 @@ test.describe('FlowCraft - Network Logger', () => {
     const page = await ExtensionUtils.openOptions(context, extensionId);
 
     // Go to Network tab
-    const networkTab = page.locator('button').filter({ hasText: 'Network' }).first();
+    const networkTab = page.getByTestId('network-tab');
     await networkTab.click();
     await page.waitForTimeout(500);
 
@@ -133,7 +133,7 @@ test.describe('FlowCraft - Network Logger', () => {
     const page = await ExtensionUtils.openOptions(context, extensionId);
 
     // Go to Network tab
-    const networkTab = page.locator('button').filter({ hasText: 'Network' }).first();
+    const networkTab = page.getByTestId('network-tab');
     await networkTab.click();
     await page.waitForTimeout(300);
 
@@ -154,7 +154,7 @@ test.describe('FlowCraft - Network Logger', () => {
     const page = await ExtensionUtils.openOptions(context, extensionId);
 
     // Go to Network tab
-    const networkTab = page.locator('button').filter({ hasText: 'Network' }).first();
+    const networkTab = page.getByTestId('network-tab');
     await networkTab.click();
     await page.waitForTimeout(300);
 
@@ -172,7 +172,7 @@ test.describe('FlowCraft - Network Logger', () => {
     const page = await ExtensionUtils.openOptions(context, extensionId);
 
     // Go to Network tab
-    const networkTab = page.locator('button').filter({ hasText: 'Network' }).first();
+    const networkTab = page.getByTestId('network-tab');
     await networkTab.click();
     await page.waitForTimeout(300);
 
@@ -190,7 +190,7 @@ test.describe('FlowCraft - Network Logger', () => {
     const page = await ExtensionUtils.openOptions(context, extensionId);
 
     // Go to Settings
-    const settingsTab = page.locator('button').filter({ hasText: 'Settings' }).first();
+    const settingsTab = page.getByTestId('settings-tab');
     await settingsTab.click();
     await page.waitForTimeout(300);
 
@@ -211,7 +211,7 @@ test.describe('FlowCraft - Network Logger', () => {
     const page = await ExtensionUtils.openOptions(context, extensionId);
 
     // Go to Settings
-    const settingsTab = page.locator('button').filter({ hasText: 'Settings' }).first();
+    const settingsTab = page.getByTestId('settings-tab');
     await settingsTab.click();
     await page.waitForTimeout(300);
 
