@@ -59,9 +59,8 @@ test.describe('FlowCraft - Conflict Detection', () => {
     // Wait for conflict detection (debounced 1s) with extra buffer
     await page.waitForTimeout(2000);
 
-    // Verify conflict badge appears (may contain text like "1 Conflict" or "Conflicts")
-    const conflictBadge = page.locator('button').filter({ hasText: /Conflict/ });
-    await expect(conflictBadge.first()).toBeVisible({ timeout: 3000 });
+    // Verify conflict badge appears
+    await expect(page.getByTestId('conflicts-badge')).toBeVisible({ timeout: 3000 });
 
     await page.close();
   });
@@ -89,8 +88,7 @@ test.describe('FlowCraft - Conflict Detection', () => {
     await page.waitForTimeout(2000);
 
     // Click conflict badge
-    const conflictBadge = page.locator('button').filter({ hasText: /Conflict/ }).first();
-    await conflictBadge.click();
+    await page.getByTestId('conflicts-badge').click();
 
     // Verify conflict modal appears
     await expect(page.locator('text=Rule Conflicts')).toBeVisible();
@@ -159,8 +157,7 @@ test.describe('FlowCraft - Conflict Detection', () => {
     await page.waitForTimeout(2000);
 
     // Verify no conflict badge (should not be visible)
-    const conflictBadge = page.locator('button').filter({ hasText: /Conflict/ });
-    await expect(conflictBadge).not.toBeVisible();
+    await expect(page.getByTestId('conflicts-badge')).not.toBeVisible();
 
     await page.close();
   });
