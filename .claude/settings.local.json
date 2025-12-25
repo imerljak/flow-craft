@@ -1,0 +1,25 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm test:*)",
+      "WebSearch",
+      "Bash(npm run build:*)",
+      "Bash(npx playwright test:*)",
+      "Bash(git add:*)",
+      "Bash(git commit -m \"$(cat <<''EOF''\nfix: Complete E2E test fixes with Modal pointer-events and test IDs\n\nThis commit resolves all remaining E2E test failures by implementing:\n\nModal Component Fixes:\n- Added pointer-events-none to backdrop and container divs\n- Added pointer-events-auto to DialogPanel for proper click handling\n- Added testId prop for reliable test targeting\n\nComponent Test IDs:\n- Modal: Added testId prop with close button variant\n- Options page: Added test IDs to key interactive elements\n  - new-rule-btn: Create new rule button\n  - rule-editor-modal: Rule editor modal\n  - delete-confirm-modal: Delete confirmation modal\n  - delete-confirm-btn/delete-cancel-btn: Confirmation buttons\n  - edit-rule-{id}/delete-rule-{id}: Table action buttons\n\nE2E Test Updates:\n- validation.spec.ts: Updated all tests to use options page instead of popup\n- rule-management.spec.ts: Fixed selectors using test IDs and role queries\n- persistence.spec.ts: Updated edit test to use modal test ID waits\n\nMigrated from @crxjs to vite-plugin-web-extension:\n- Updated Vite and Playwright configs\n- Migrated to Tailwind CSS v4 with @theme directive\n- Updated ESLint to v9 flat config (eslint.config.mjs)\n- Removed deprecated PostCSS config\n\nTest Results:\n- All 32 E2E tests passing\n- All 57 unit tests passing\n- Linting clean (1 informational warning)\nEOF\n)\")",
+      "Bash(git push:*)",
+      "Bash(npm run test:coverage:*)",
+      "Bash(git reset:*)",
+      "Bash(npm run test:*)",
+      "Bash(npm run test:e2e:*)",
+      "Bash(grep:*)",
+      "Bash(pkill:*)",
+      "Bash(ls:*)",
+      "Bash(cat:*)",
+      "Bash(npm run lint)",
+      "Bash(npm run lint:*)",
+      "Bash(git commit:*)",
+      "Bash(npm install:*)"
+    ]
+  }
+}

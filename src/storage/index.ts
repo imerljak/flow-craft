@@ -9,8 +9,13 @@ import {
   Settings,
   DEFAULT_SETTINGS,
   StorageSchema,
+  ExportData,
+  ImportOptions,
+  ImportResult,
 } from '@shared/types';
 import Browser from 'webextension-polyfill';
+import { v4 as uuidv4 } from 'uuid';
+import { storageCache, CACHE_TTL } from './cache';
 
 /**
  * Filter options for querying rules
@@ -53,6 +58,14 @@ export class Storage {
    * Get all rules, optionally filtered
    */
   static async getRules(filter?: RuleFilter): Promise<Rule[]> {
+    // Try cache first
+    const cacheKey = `rules_${JSON.stringify(filter || {})}`;
+    const cached = storageCache.get<Rule[]>(cacheKey);
+    if (cached) {
+      return cached;
+    }
+
+    // Cache miss - fetch from storage
     const data = await Browser.storage.local.get([this.STORAGE_KEYS.RULES]);
     let rules: Rule[] = data.rules as Rule[] || [];
 
@@ -65,6 +78,9 @@ export class Storage {
         rules = rules.filter((rule) => rule.groupId === filter.groupId);
       }
     }
+
+    // Cache the result
+    storageCache.set(cacheKey, rules, CACHE_TTL.RULES);
 
     return rules;
   }
@@ -94,6 +110,9 @@ export class Storage {
     }
 
     await Browser.storage.local.set({ rules });
+
+    // Invalidate rules cache
+    storageCache.invalidatePattern(/^rules_/);
   }
 
   /**
@@ -105,14 +124,29 @@ export class Storage {
     const filteredRules = rules.filter((rule) => rule.id !== id);
 
     await Browser.storage.local.set({ rules: filteredRules });
+
+    // Invalidate rules cache
+    storageCache.invalidatePattern(/^rules_/);
   }
 
   /**
    * Get extension settings
    */
   static async getSettings(): Promise<Settings> {
+    // Try cache first
+    const cached = storageCache.get<Settings>('settings');
+    if (cached) {
+      return cached;
+    }
+
+    // Cache miss - fetch from storage
     const data = await Browser.storage.local.get([this.STORAGE_KEYS.SETTINGS]);
-    return (data.settings || DEFAULT_SETTINGS) as Settings;
+    const settings = (data.settings || DEFAULT_SETTINGS) as Settings;
+
+    // Cache the result
+    storageCache.set('settings', settings, CACHE_TTL.SETTINGS);
+
+    return settings;
   }
 
   /**
@@ -120,6 +154,9 @@ export class Storage {
    */
   static async saveSettings(settings: Settings): Promise<void> {
     await Browser.storage.local.set({ settings });
+
+    // Invalidate settings cache
+    storageCache.invalidate('settings');
   }
 
   /**
@@ -174,14 +211,235 @@ export class Storage {
   }
 
   /**
-   * Export all data as JSON
+   * Export rules and optionally settings/groups in a structured format
+   */
+  static async exportRules(options: {
+    includeSettings?: boolean;
+    includeGroups?: boolean;
+    ruleIds?: string[]; // Export specific rules only
+  } = {}): Promise<ExportData> {
+    const {
+      includeSettings = false,
+      includeGroups = true,
+      ruleIds,
+    } = options;
+
+    const allRules = await this.getRules();
+    const rules = ruleIds
+      ? allRules.filter((rule) => ruleIds.includes(rule.id))
+      : allRules;
+
+    const groups = includeGroups ? await this.getGroups() : [];
+    const settings = includeSettings ? await this.getSettings() : undefined;
+
+    // Get extension version from manifest
+    const manifest = Browser.runtime.getManifest();
+
+    const exportData: ExportData = {
+      version: manifest.version,
+      exportDate: Date.now(),
+      exportFormat: 1, // Current format version
+      data: {
+        rules,
+        groups: includeGroups ? groups : undefined,
+        settings: includeSettings ? settings : undefined,
+      },
+      metadata: {
+        rulesCount: rules.length,
+        groupsCount: groups.length,
+        includesSettings: includeSettings,
+      },
+    };
+
+    return exportData;
+  }
+
+  /**
+   * Validate import data structure
+   */
+  private static validateImportData(data: unknown): {
+    valid: boolean;
+    errors: string[];
+    warnings: string[];
+  } {
+    const errors: string[] = [];
+    const warnings: string[] = [];
+
+    // Type guard
+    if (typeof data !== 'object' || data === null) {
+      errors.push('Invalid import data: not an object');
+      return { valid: false, errors, warnings };
+    }
+
+    const exportData = data as Partial<ExportData>;
+
+    // Check version
+    if (!exportData.version) {
+      warnings.push('Import data missing version information');
+    }
+
+    // Check format
+    if (!exportData.exportFormat) {
+      warnings.push('Import data missing format version, assuming legacy format');
+    } else if (exportData.exportFormat > 1) {
+      warnings.push(`Import data format version ${exportData.exportFormat} is newer than current version 1`);
+    }
+
+    // Check data structure
+    if (!exportData.data) {
+      errors.push('Import data missing "data" field');
+      return { valid: false, errors, warnings };
+    }
+
+    if (!Array.isArray(exportData.data.rules)) {
+      errors.push('Import data missing "rules" array');
+      return { valid: false, errors, warnings };
+    }
+
+    // Validate each rule has required fields
+    exportData.data.rules.forEach((rule, index) => {
+      if (!rule.id) {
+        warnings.push(`Rule at index ${index} missing ID, will generate new ID`);
+      }
+      if (!rule.name) {
+        errors.push(`Rule at index ${index} missing name`);
+      }
+      if (!rule.matcher || !rule.matcher.pattern) {
+        errors.push(`Rule at index ${index} missing matcher pattern`);
+      }
+      if (!rule.action || !rule.action.type) {
+        errors.push(`Rule at index ${index} missing action type`);
+      }
+    });
+
+    return {
+      valid: errors.length === 0,
+      errors,
+      warnings,
+    };
+  }
+
+  /**
+   * Import rules with validation and conflict resolution
+   */
+  static async importRules(
+    data: unknown,
+    options: ImportOptions = {}
+  ): Promise<ImportResult> {
+    const {
+      overwriteExisting = false,
+      importSettings = false,
+      importGroups = true,
+      preserveIds = false,
+    } = options;
+
+    // Validate data
+    const validation = this.validateImportData(data);
+    if (!validation.valid) {
+      return {
+        success: false,
+        rulesImported: 0,
+        groupsImported: 0,
+        settingsImported: false,
+        errors: validation.errors,
+        warnings: validation.warnings,
+      };
+    }
+
+    const exportData = data as ExportData;
+    const result: ImportResult = {
+      success: true,
+      rulesImported: 0,
+      groupsImported: 0,
+      settingsImported: false,
+      errors: [],
+      warnings: validation.warnings,
+    };
+
+    try {
+      // Import groups first (if included and requested)
+      if (importGroups && exportData.data.groups) {
+        const existingGroups = await this.getGroups();
+        const existingGroupIds = new Set(existingGroups.map((g) => g.id));
+
+        for (const group of exportData.data.groups) {
+          const groupToImport = { ...group };
+
+          // Handle ID conflicts
+          if (existingGroupIds.has(group.id)) {
+            if (overwriteExisting) {
+              await this.saveGroup(groupToImport);
+              result.groupsImported++;
+            } else if (!preserveIds) {
+              // Generate new ID
+              groupToImport.id = uuidv4();
+              await this.saveGroup(groupToImport);
+              result.groupsImported++;
+              result.warnings.push(`Group "${group.name}" imported with new ID`);
+            } else {
+              result.warnings.push(`Group "${group.name}" skipped due to ID conflict`);
+            }
+          } else {
+            await this.saveGroup(groupToImport);
+            result.groupsImported++;
+          }
+        }
+      }
+
+      // Import rules
+      const existingRules = await this.getRules();
+      const existingRuleIds = new Set(existingRules.map((r) => r.id));
+
+      for (const rule of exportData.data.rules) {
+        const ruleToImport = { ...rule };
+
+        // Ensure required fields
+        if (!ruleToImport.id || !preserveIds || existingRuleIds.has(ruleToImport.id)) {
+          if (existingRuleIds.has(ruleToImport.id) && !overwriteExisting && preserveIds) {
+            result.warnings.push(`Rule "${rule.name}" skipped due to ID conflict`);
+            continue;
+          }
+          // Generate new ID
+          ruleToImport.id = uuidv4();
+        }
+
+        // Update timestamps
+        ruleToImport.createdAt = Date.now();
+        ruleToImport.updatedAt = Date.now();
+
+        await this.saveRule(ruleToImport);
+        result.rulesImported++;
+      }
+
+      // Import settings (if included and requested)
+      if (importSettings && exportData.data.settings) {
+        const currentSettings = await this.getSettings();
+        const mergedSettings = {
+          ...currentSettings,
+          ...exportData.data.settings,
+        };
+        await this.saveSettings(mergedSettings);
+        result.settingsImported = true;
+      }
+    } catch (error) {
+      result.success = false;
+      result.errors.push(
+        error instanceof Error ? error.message : 'Unknown error during import'
+      );
+    }
+
+    return result;
+  }
+
+  /**
+   * Legacy export method for backwards compatibility
    */
   static async exportData(): Promise<Partial<StorageSchema>> {
     return await Browser.storage.local.get(null);
   }
 
   /**
-   * Import data from JSON
+   * Legacy import method for backwards compatibility
    */
   static async importData(data: Partial<StorageSchema>): Promise<void> {
     await Browser.storage.local.set(data);

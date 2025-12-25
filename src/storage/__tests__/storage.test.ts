@@ -6,9 +6,13 @@ import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { Storage } from '../index';
 import { Rule, RuleGroup, Settings, DEFAULT_SETTINGS, RuleType, HttpMethod } from '@shared/types';
 import Browser from 'webextension-polyfill';
+import { storageCache } from '../cache';
 
 describe('Storage', () => {
   beforeEach(() => {
+    // Clear storage cache
+    storageCache.clear();
+
     // Clear Browser.runtime.lastError
     delete Browser.runtime.lastError;
 
@@ -18,6 +22,9 @@ describe('Storage', () => {
   });
 
   afterEach(() => {
+    // Clear cache after each test
+    storageCache.clear();
+
     // Ensure Browser.runtime.lastError is cleaned up
     delete Browser.runtime.lastError;
   });

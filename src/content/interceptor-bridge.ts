@@ -34,6 +34,7 @@ window.addEventListener('message', async (event) => {
           type: 'FLOWCRAFT_MOCK_RESPONSE',
           requestId,
           mockResponse: response?.success ? response.mockResponse : null,
+          ruleId: response?.ruleId,
         },
         '*'
       );
@@ -50,6 +51,48 @@ window.addEventListener('message', async (event) => {
         },
         '*'
       );
+    }
+  } else if (event.data?.type === 'FLOWCRAFT_LOG_REQUEST') {
+    // Log request to background
+    const { request, interception } = event.data;
+
+    try {
+      const response = await chrome.runtime.sendMessage({
+        type: 'LOG_REQUEST',
+        request,
+        interception,
+      });
+
+      // Send logId back to MAIN world
+      window.postMessage(
+        {
+          type: 'FLOWCRAFT_LOG_REQUEST_RESPONSE',
+          logId: response?.logId || '',
+        },
+        '*'
+      );
+    } catch (error) {
+      console.error('[FlowCraft Bridge] Error logging request:', error);
+      window.postMessage(
+        {
+          type: 'FLOWCRAFT_LOG_REQUEST_RESPONSE',
+          logId: '',
+        },
+        '*'
+      );
+    }
+  } else if (event.data?.type === 'FLOWCRAFT_LOG_RESPONSE') {
+    // Log response to background
+    const { logId, response } = event.data;
+
+    try {
+      await chrome.runtime.sendMessage({
+        type: 'LOG_RESPONSE',
+        logId,
+        response,
+      });
+    } catch (error) {
+      console.error('[FlowCraft Bridge] Error logging response:', error);
     }
   }
 });

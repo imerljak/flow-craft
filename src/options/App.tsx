@@ -1,12 +1,19 @@
-import React, { useEffect, useState } from 'react';
-import { Rule } from '@shared/types';
+import React, { useEffect, useState, useMemo, useCallback, useRef } from 'react';
+import { Rule, RuleTemplate, RuleConflict } from '@shared/types';
 import { Storage } from '@storage/index';
 import { Modal } from '@components/Modal';
 import { Drawer } from '@components/Drawer/Drawer';
 import { RuleEditor } from '@components/RuleEditor';
 import { Button } from '@components/Button';
+import { NetworkView } from '@components/NetworkView';
+import { SettingsView } from '@components/SettingsView';
+import { TemplateBrowser } from '@components/TemplateBrowser';
+import { ConflictPanel } from '@components/ConflictPanel';
+import { generateId } from '@shared/utils';
+import { DEFAULT_RULE_PRIORITY } from '@shared/constants';
+import browser from 'webextension-polyfill';
 
-type View = 'rules' | 'settings';
+type View = 'rules' | 'network' | 'settings' | 'templates';
 
 /**
  * Options page - Full application with CRUD functionality
@@ -14,6 +21,8 @@ type View = 'rules' | 'settings';
 const App: React.FC = () => {
   const [currentView, setCurrentView] = useState<View>('rules');
   const [rules, setRules] = useState<Rule[]>([]);
+  const [conflicts, setConflicts] = useState<RuleConflict[]>([]);
+  const [showConflicts, setShowConflicts] = useState(false);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [showEditor, setShowEditor] = useState(false);
@@ -21,11 +30,36 @@ const App: React.FC = () => {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [deletingRule, setDeletingRule] = useState<Rule | null>(null);
 
+  // Debounce timer ref for conflict detection
+  const conflictDetectionTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
   useEffect(() => {
     loadRules();
+    detectConflicts();
   }, []);
 
-  const loadRules = async (): Promise<void> => {
+  // Debounced conflict detection when rules change
+  useEffect(() => {
+    if (rules.length > 0) {
+      // Clear existing timer
+      if (conflictDetectionTimer.current) {
+        clearTimeout(conflictDetectionTimer.current);
+      }
+
+      // Debounce conflict detection by 1000ms
+      conflictDetectionTimer.current = setTimeout(() => {
+        detectConflicts();
+      }, 1000);
+    }
+
+    return () => {
+      if (conflictDetectionTimer.current) {
+        clearTimeout(conflictDetectionTimer.current);
+      }
+    };
+  }, [rules]);
+
+  const loadRules = useCallback(async (): Promise<void> => {
     try {
       const loadedRules = await Storage.getRules();
       setRules(loadedRules);
@@ -34,66 +68,111 @@ const App: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
-  const handleCreateRule = (): void => {
+  const detectConflicts = useCallback(async (): Promise<void> => {
+    try {
+      const response = (await browser.runtime.sendMessage({
+        type: 'DETECT_CONFLICTS',
+      })) as { success: boolean; conflicts?: RuleConflict[] };
+
+      if (response.success && response.conflicts) {
+        setConflicts(response.conflicts);
+      }
+    } catch (error) {
+      console.error('Failed to detect conflicts:', error);
+    }
+  }, []);
+
+  const handleViewConflictRule = useCallback((ruleId: string): void => {
+    const rule = rules.find((r) => r.id === ruleId);
+    if (rule) {
+      setEditingRule(rule);
+      setShowEditor(true);
+      setShowConflicts(false);
+    }
+  }, [rules]);
+
+  const handleCreateRule = useCallback((): void => {
     setEditingRule(undefined);
     setShowEditor(true);
-  };
+  }, []);
 
-  const handleEditRule = (rule: Rule): void => {
+  const handleEditRule = useCallback((rule: Rule): void => {
     setEditingRule(rule);
     setShowEditor(true);
-  };
+  }, []);
 
-  const handleSaveRule = async (rule: Rule): Promise<void> => {
+  const handleSaveRule = useCallback(async (rule: Rule): Promise<void> => {
     await Storage.saveRule(rule);
     await loadRules();
     setShowEditor(false);
     setEditingRule(undefined);
-  };
+  }, [loadRules]);
 
-  const handleCancelEdit = (): void => {
+  const handleCancelEdit = useCallback((): void => {
     setShowEditor(false);
     setEditingRule(undefined);
-  };
+  }, []);
 
-  const confirmDeleteRule = (rule: Rule): void => {
+  const confirmDeleteRule = useCallback((rule: Rule): void => {
     setDeletingRule(rule);
     setShowDeleteConfirm(true);
-  };
+  }, []);
 
-  const handleDeleteRule = async (): Promise<void> => {
+  const handleDeleteRule = useCallback(async (): Promise<void> => {
     if (deletingRule) {
       await Storage.deleteRule(deletingRule.id);
       await loadRules();
       setShowDeleteConfirm(false);
       setDeletingRule(null);
     }
-  };
+  }, [deletingRule, loadRules]);
 
-  const handleCancelDelete = (): void => {
+  const handleCancelDelete = useCallback((): void => {
     setShowDeleteConfirm(false);
     setDeletingRule(null);
-  };
+  }, []);
 
-  const toggleRule = async (ruleId: string): Promise<void> => {
+  const handleUseTemplate = useCallback((template: RuleTemplate): void => {
+    // Create a new rule from the template
+    const newRule: Rule = {
+      ...template.rule,
+      id: generateId(),
+      priority: template.rule.priority || DEFAULT_RULE_PRIORITY,
+      createdAt: Date.now(),
+      updatedAt: Date.now(),
+    };
+
+    setEditingRule(newRule);
+    setShowEditor(true);
+    setCurrentView('rules'); // Switch to rules view with editor open
+  }, []);
+
+  const toggleRule = useCallback(async (ruleId: string): Promise<void> => {
     const rule = rules.find((r) => r.id === ruleId);
     if (rule) {
       const updatedRule = { ...rule, enabled: !rule.enabled, updatedAt: Date.now() };
       await Storage.saveRule(updatedRule);
       await loadRules();
     }
-  };
+  }, [rules, loadRules]);
 
-  const filteredRules = rules.filter(
-    (rule) =>
-      rule.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      rule.description?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      rule.matcher.pattern.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  // Memoized filtered rules - only recompute when rules or searchQuery changes
+  const filteredRules = useMemo(() => {
+    const query = searchQuery.toLowerCase();
+    return rules.filter(
+      (rule) =>
+        rule.name.toLowerCase().includes(query) ||
+        rule.description?.toLowerCase().includes(query) ||
+        rule.matcher.pattern.toLowerCase().includes(query)
+    );
+  }, [rules, searchQuery]);
 
-  const activeRulesCount = rules.filter((r) => r.enabled).length;
+  // Memoized active rules count
+  const activeRulesCount = useMemo(() => {
+    return rules.filter((r) => r.enabled).length;
+  }, [rules]);
 
   return (
     <div className="min-h-screen bg-neutral-50 dark:bg-neutral-900 flex">
@@ -128,6 +207,30 @@ const App: React.FC = () => {
           </button>
 
           <button
+            onClick={() => setCurrentView('templates')}
+            className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium transition-colors mt-1 ${
+              currentView === 'templates'
+                ? 'bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400'
+                : 'text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-700'
+            }`}
+          >
+            <span className="text-base">📚</span>
+            <span>Templates</span>
+          </button>
+
+          <button
+            onClick={() => setCurrentView('network')}
+            className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium transition-colors mt-1 ${
+              currentView === 'network'
+                ? 'bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400'
+                : 'text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-700'
+            }`}
+          >
+            <span className="text-base">🌐</span>
+            <span>Network</span>
+          </button>
+
+          <button
             onClick={() => setCurrentView('settings')}
             className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium transition-colors mt-1 ${
               currentView === 'settings'
@@ -155,13 +258,26 @@ const App: React.FC = () => {
             {/* Header */}
             <header className="bg-white dark:bg-neutral-800 border-b border-neutral-200 dark:border-neutral-700 px-8 py-6">
               <div className="flex items-center justify-between mb-4">
-                <div>
-                  <h2 className="text-2xl font-bold text-neutral-900 dark:text-white">
-                    HTTP Rules
-                  </h2>
-                  <p className="text-sm text-neutral-600 dark:text-neutral-400 mt-1">
-                    {activeRulesCount} of {rules.length} rules active
-                  </p>
+                <div className="flex items-center gap-4">
+                  <div>
+                    <h2 className="text-2xl font-bold text-neutral-900 dark:text-white">
+                      HTTP Rules
+                    </h2>
+                    <p className="text-sm text-neutral-600 dark:text-neutral-400 mt-1">
+                      {activeRulesCount} of {rules.length} rules active
+                    </p>
+                  </div>
+                  {conflicts.length > 0 && (
+                    <button
+                      onClick={() => setShowConflicts(true)}
+                      className="flex items-center gap-2 px-3 py-1.5 bg-amber-50 dark:bg-amber-900/20 border border-amber-300 dark:border-amber-700 rounded-lg hover:bg-amber-100 dark:hover:bg-amber-900/30 transition-colors"
+                    >
+                      <span>⚠️</span>
+                      <span className="text-sm font-medium text-amber-800 dark:text-amber-200">
+                        {conflicts.length} {conflicts.length === 1 ? 'Conflict' : 'Conflicts'}
+                      </span>
+                    </button>
+                  )}
                 </div>
                 <Button variant="primary" onClick={handleCreateRule} data-testid="new-rule-btn">
                   + New Rule
@@ -304,20 +420,25 @@ const App: React.FC = () => {
               )}
             </div>
           </>
+        ) : currentView === 'templates' ? (
+          /* Templates View */
+          <div className="flex-1 overflow-auto p-8">
+            <div className="mb-6">
+              <h2 className="text-2xl font-bold text-neutral-900 dark:text-white">
+                Rule Templates
+              </h2>
+              <p className="text-sm text-neutral-600 dark:text-neutral-400 mt-1">
+                Browse and use pre-configured rule templates for common use cases
+              </p>
+            </div>
+            <TemplateBrowser onUseTemplate={handleUseTemplate} />
+          </div>
+        ) : currentView === 'network' ? (
+          /* Network View */
+          <NetworkView />
         ) : (
           /* Settings View */
-          <div className="flex-1 overflow-auto p-8">
-            <div className="max-w-3xl">
-              <h2 className="text-2xl font-bold text-neutral-900 dark:text-white mb-6">
-                Settings
-              </h2>
-              <div className="bg-white dark:bg-neutral-800 rounded-lg border border-neutral-200 dark:border-neutral-700 p-6">
-                <p className="text-neutral-600 dark:text-neutral-400">
-                  Settings configuration coming soon...
-                </p>
-              </div>
-            </div>
-          </div>
+          <SettingsView />
         )}
       </main>
 
@@ -353,6 +474,21 @@ const App: React.FC = () => {
             </Button>
           </div>
         </div>
+      </Modal>
+
+      {/* Conflicts Modal */}
+      <Modal
+        isOpen={showConflicts}
+        onClose={() => setShowConflicts(false)}
+        title="Rule Conflicts"
+        size="lg"
+        testId="conflicts-modal"
+      >
+        <ConflictPanel
+          conflicts={conflicts}
+          rules={rules}
+          onViewRule={handleViewConflictRule}
+        />
       </Modal>
     </div>
   );
