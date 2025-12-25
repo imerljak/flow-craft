@@ -87,18 +87,14 @@ test.describe('FlowCraft - Network Logger', () => {
     await settingsTab.click();
     await page.waitForTimeout(300);
 
-    // Find logger enable toggle
-    const loggerToggle = page.locator('input[type="checkbox"]').filter({
-      has: page.locator('~ text=Enable Request Logger'),
-    }).or(
-      page.locator('label:has-text("Enable")').locator('input[type="checkbox"]')
-    );
+    // Find logger enable toggle by looking for "Enable Logging" label
+    const loggerToggle = page.locator('label:has-text("Enable Logging")').locator('input[type="checkbox"]');
 
     // Enable if not already enabled
-    if (await loggerToggle.first().isVisible()) {
-      const isChecked = await loggerToggle.first().isChecked();
+    if (await loggerToggle.isVisible()) {
+      const isChecked = await loggerToggle.isChecked();
       if (!isChecked) {
-        await loggerToggle.first().click();
+        await loggerToggle.click();
         await page.waitForTimeout(500);
       }
     }

@@ -71,14 +71,14 @@ test.describe('FlowCraft - Conflict Detection', () => {
     await page.getByTestId('new-rule-btn').click();
     await page.fill('input[placeholder*="CORS"]', 'Block Rule');
     await page.fill('input[placeholder*="api.example.com"]', 'https://api.example.com/test');
-    await page.selectOption('select#rule-type', { value: 'block' });
+    await page.selectOption('select#rule-type', { value: 'request_block' });
     await page.locator('button:has-text("Save Rule")').click();
     await expect(page.getByTestId('rule-editor-drawer')).not.toBeVisible({ timeout: 3000 });
 
     await page.getByTestId('new-rule-btn').click();
     await page.fill('input[placeholder*="CORS"]', 'Redirect Rule');
     await page.fill('input[placeholder*="api.example.com"]', 'https://api.example.com/test');
-    await page.selectOption('select#rule-type', { value: 'redirect' });
+    await page.selectOption('select#rule-type', { value: 'url_redirect' });
     await page.fill('input[placeholder*="https://example.com"]', 'https://redirect.com');
     await page.locator('button:has-text("Save Rule")').click();
     await expect(page.getByTestId('rule-editor-drawer')).not.toBeVisible({ timeout: 3000 });
@@ -108,7 +108,7 @@ test.describe('FlowCraft - Conflict Detection', () => {
     await page.getByTestId('new-rule-btn').click();
     await page.fill('input[placeholder*="CORS"]', 'First Rule');
     await page.fill('input[placeholder*="api.example.com"]', 'https://test.com/api');
-    await page.selectOption('select#rule-type', { value: 'block' });
+    await page.selectOption('select#rule-type', { value: 'request_block' });
     await page.locator('button:has-text("Save Rule")').click();
     await expect(page.getByTestId('rule-editor-drawer')).not.toBeVisible({ timeout: 3000 });
 
@@ -223,14 +223,14 @@ test.describe('FlowCraft - Conflict Detection', () => {
     await page.getByTestId('new-rule-btn').click();
     await page.fill('input[placeholder*="CORS"]', 'Rule A');
     await page.fill('input[placeholder*="api.example.com"]', 'https://siteA.com');
-    await page.selectOption('select#rule-type', { value: 'block' });
+    await page.selectOption('select#rule-type', { value: 'request_block' });
     await page.locator('button:has-text("Save Rule")').click();
     await expect(page.getByTestId('rule-editor-drawer')).not.toBeVisible({ timeout: 3000 });
 
     await page.getByTestId('new-rule-btn').click();
     await page.fill('input[placeholder*="CORS"]', 'Rule B');
     await page.fill('input[placeholder*="api.example.com"]', 'https://siteB.com');
-    await page.selectOption('select#rule-type', { value: 'redirect' });
+    await page.selectOption('select#rule-type', { value: 'url_redirect' });
     await page.fill('input[placeholder*="https://example.com"]', 'https://redirect.com');
     await page.locator('button:has-text("Save Rule")').click();
     await expect(page.getByTestId('rule-editor-drawer')).not.toBeVisible({ timeout: 3000 });
@@ -252,14 +252,14 @@ test.describe('FlowCraft - Conflict Detection', () => {
     await page.getByTestId('new-rule-btn').click();
     await page.fill('input[placeholder*="CORS"]', 'Viewable Rule 1');
     await page.fill('input[placeholder*="api.example.com"]', 'https://conflict.com');
-    await page.selectOption('select#rule-type', { value: 'block' });
+    await page.selectOption('select#rule-type', { value: 'request_block' });
     await page.locator('button:has-text("Save Rule")').click();
     await expect(page.getByTestId('rule-editor-drawer')).not.toBeVisible({ timeout: 3000 });
 
     await page.getByTestId('new-rule-btn').click();
     await page.fill('input[placeholder*="CORS"]', 'Viewable Rule 2');
     await page.fill('input[placeholder*="api.example.com"]', 'https://conflict.com');
-    await page.selectOption('select#rule-type', { value: 'redirect' });
+    await page.selectOption('select#rule-type', { value: 'url_redirect' });
     await page.fill('input[placeholder*="https://example.com"]', 'https://other.com');
     await page.locator('button:has-text("Save Rule")').click();
     await expect(page.getByTestId('rule-editor-drawer')).not.toBeVisible({ timeout: 3000 });
@@ -285,14 +285,14 @@ test.describe('FlowCraft - Conflict Detection', () => {
     await page.getByTestId('new-rule-btn').click();
     await page.fill('input[placeholder*="CORS"]', 'Modify Test 1');
     await page.fill('input[placeholder*="api.example.com"]', 'https://same.com');
-    await page.selectOption('select#rule-type', { value: 'block' });
+    await page.selectOption('select#rule-type', { value: 'request_block' });
     await page.locator('button:has-text("Save Rule")').click();
     await expect(page.getByTestId('rule-editor-drawer')).not.toBeVisible({ timeout: 3000 });
 
     await page.getByTestId('new-rule-btn').click();
     await page.fill('input[placeholder*="CORS"]', 'Modify Test 2');
     await page.fill('input[placeholder*="api.example.com"]', 'https://same.com');
-    await page.selectOption('select#rule-type', { value: 'redirect' });
+    await page.selectOption('select#rule-type', { value: 'url_redirect' });
     await page.fill('input[placeholder*="https://example.com"]', 'https://redirect.com');
     await page.locator('button:has-text("Save Rule")').click();
     await expect(page.getByTestId('rule-editor-drawer')).not.toBeVisible({ timeout: 3000 });
