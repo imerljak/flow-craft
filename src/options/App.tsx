@@ -23,6 +23,7 @@ const App: React.FC = () => {
   const [rules, setRules] = useState<Rule[]>([]);
   const [conflicts, setConflicts] = useState<RuleConflict[]>([]);
   const [showConflicts, setShowConflicts] = useState(false);
+  const [version, setVersion] = useState<string>('0.0.0');
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [showEditor, setShowEditor] = useState(false);
@@ -36,6 +37,9 @@ const App: React.FC = () => {
   useEffect(() => {
     loadRules();
     detectConflicts();
+    // Get version from manifest
+    const manifestVersion = browser.runtime.getManifest().version;
+    setVersion(manifestVersion);
   }, []);
 
   // Debounced conflict detection when rules change
@@ -253,7 +257,7 @@ const App: React.FC = () => {
         {/* Footer */}
         <div className="p-4 border-t border-neutral-200 dark:border-neutral-700">
           <div className="text-xs text-neutral-600 dark:text-neutral-400 text-center">
-            Version 1.0.0
+            Version {version}
           </div>
         </div>
       </aside>
