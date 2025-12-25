@@ -1,6 +1,6 @@
 {
   "version": "0.1.0",
-  "exportDate": 1766701054154,
+  "exportDate": 1766701323860,
   "exportFormat": 1,
   "data": {
     "rules": [
@@ -101,12 +101,76 @@
         "name": "Close Test Rule",
         "priority": 1,
         "updatedAt": 1766700609042
+      },
+      {
+        "action": {
+          "type": "request_block"
+        },
+        "createdAt": 1766701053740,
+        "enabled": true,
+        "id": "1766701053740-ndj1buo13",
+        "matcher": {
+          "pattern": "https://export.test.com/*",
+          "type": "exact"
+        },
+        "name": "Test Export Rule",
+        "priority": 100,
+        "updatedAt": 1766701053740
+      },
+      {
+        "action": {
+          "redirectUrl": "https://redirect.test.com",
+          "type": "url_redirect"
+        },
+        "createdAt": 1766701055274,
+        "description": "First imported rule",
+        "enabled": true,
+        "id": "bfc9185f-d220-4476-a4c3-d22c926f42a9",
+        "matcher": {
+          "pattern": "https://import.test.com/*",
+          "type": "wildcard"
+        },
+        "name": "Imported Rule 1",
+        "priority": 1,
+        "updatedAt": 1766701055274
+      },
+      {
+        "action": {
+          "type": "request_block"
+        },
+        "createdAt": 1766701055275,
+        "description": "Second imported rule",
+        "enabled": false,
+        "id": "53bec260-dccb-4e1c-a4fb-14e1666e906e",
+        "matcher": {
+          "pattern": "https://import2.test.com/api",
+          "type": "exact"
+        },
+        "name": "Imported Rule 2",
+        "priority": 2,
+        "updatedAt": 1766701055275
+      },
+      {
+        "action": {
+          "type": "request_block"
+        },
+        "createdAt": 1766701058722,
+        "description": "Testing close button",
+        "enabled": true,
+        "id": "055b503f-c85e-4130-ada7-64fc6c37124f",
+        "matcher": {
+          "pattern": "https://close.test.com/*",
+          "type": "wildcard"
+        },
+        "name": "Close Test Rule",
+        "priority": 1,
+        "updatedAt": 1766701058722
       }
     ],
     "groups": []
   },
   "metadata": {
-    "rulesCount": 6,
+    "rulesCount": 10,
     "groupsCount": 0,
     "includesSettings": false
   }

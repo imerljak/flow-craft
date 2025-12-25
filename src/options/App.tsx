@@ -272,6 +272,7 @@ const App: React.FC = () => {
                   </div>
                   {conflicts.length > 0 && (
                     <button
+                      data-testid="conflicts-badge"
                       onClick={() => setShowConflicts(true)}
                       className="flex items-center gap-2 px-3 py-1.5 bg-amber-50 dark:bg-amber-900/20 border border-amber-300 dark:border-amber-700 rounded-lg hover:bg-amber-100 dark:hover:bg-amber-900/30 transition-colors"
                     >

@@ -1,6 +1,6 @@
 {
   "version": "1.0.0",
-  "exportDate": 1766701055257,
+  "exportDate": 1766701325001,
   "exportFormat": 1,
   "data": {
     "rules": [
@@ -18,8 +18,8 @@
           "type": "url_redirect",
           "redirectUrl": "https://redirect.test.com"
         },
-        "createdAt": 1766701055258,
-        "updatedAt": 1766701055258
+        "createdAt": 1766701325001,
+        "updatedAt": 1766701325001
       },
       {
         "id": "import-test-2",
@@ -34,8 +34,8 @@
         "action": {
           "type": "request_block"
         },
-        "createdAt": 1766701055258,
-        "updatedAt": 1766701055258
+        "createdAt": 1766701325001,
+        "updatedAt": 1766701325001
       }
     ]
   },
