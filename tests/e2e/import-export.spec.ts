@@ -7,18 +7,24 @@ import type { ExportData, RuleType } from '../../src/shared/types';
 import path from 'path';
 import fs from 'fs';
 import { ExtensionUtils } from './extension-utils';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 test.describe('Import/Export Rules', () => {
   let context: BrowserContext;
   let extensionId: string;
 
   test.beforeAll(async () => {
-    const userDataDir = path.join(__dirname, 'test-data', `import-export-${Date.now()}`);
+    const userDataDir = path.join(process.cwd(), '.test-user-data', 'import-export');
     context = await chromium.launchPersistentContext(userDataDir, {
       headless: false,
       args: [
-        `--disable-extensions-except=${path.join(__dirname, '..', '..', 'dist')}`,
-        `--load-extension=${path.join(__dirname, '..', '..', 'dist')}`,
+        '--disable-extensions-except=' + path.join(process.cwd(), 'dist'),
+        '--load-extension=' + path.join(process.cwd(), 'dist'),
+        '--no-sandbox',
+        '--disable-setuid-sandbox',
       ],
     });
     extensionId = await ExtensionUtils.getExtensionId(context);

@@ -219,7 +219,7 @@ test.describe('FlowCraft - Settings', () => {
     await page.getByTestId('new-rule-btn').click();
     await page.fill('input[placeholder*="CORS"]', 'Export Test Rule');
     await page.fill('input[placeholder*="api.example.com"]', 'https://example.com');
-    await page.selectOption('select#rule-type', { value: 'block' });
+    await page.selectOption('select#rule-type', { value: 'request_block' });
     await page.locator('button:has-text("Save Rule")').click();
     await expect(page.getByTestId('rule-editor-drawer')).not.toBeVisible({ timeout: 3000 });
 
