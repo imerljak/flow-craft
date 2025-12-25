@@ -72,11 +72,14 @@ const App: React.FC = () => {
 
   const detectConflicts = useCallback(async (): Promise<void> => {
     try {
+      console.log('[FlowCraft App] Detecting conflicts...');
       const response = (await browser.runtime.sendMessage({
         type: 'DETECT_CONFLICTS',
       })) as { success: boolean; conflicts?: RuleConflict[] };
 
+      console.log('[FlowCraft App] Conflict detection response:', response);
       if (response.success && response.conflicts) {
+        console.log('[FlowCraft App] Setting conflicts:', response.conflicts.length);
         setConflicts(response.conflicts);
       }
     } catch (error) {
@@ -192,6 +195,7 @@ const App: React.FC = () => {
         {/* Navigation */}
         <nav className="flex-1 p-4">
           <button
+            data-testid="rules-tab"
             onClick={() => setCurrentView('rules')}
             className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium transition-colors ${
               currentView === 'rules'

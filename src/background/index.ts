@@ -266,7 +266,9 @@ browser.runtime.onMessage.addListener((message: unknown, _sender, sendResponse):
         }
         case 'DETECT_CONFLICTS': {
           const rules = await Storage.getRules();
+          console.log('[FlowCraft Background] DETECT_CONFLICTS - Rules:', rules.length, rules.map(r => ({ name: r.name, enabled: r.enabled, pattern: r.matcher.pattern, type: r.action.type })));
           const conflicts = ConflictDetector.detectConflicts(rules);
+          console.log('[FlowCraft Background] DETECT_CONFLICTS - Found conflicts:', conflicts.length, conflicts);
           sendResponse({ success: true, conflicts });
           break;
         }
