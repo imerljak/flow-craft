@@ -39,9 +39,8 @@ test.describe('FlowCraft - Template Browser', () => {
   test('should display template browser button', async () => {
     const page = await ExtensionUtils.openOptions(context, extensionId);
 
-    // Verify template browser button is visible
-    const templateButton = page.locator('button').filter({ hasText: /Template/ });
-    await expect(templateButton.first()).toBeVisible();
+    // Verify template browser tab is visible
+    await expect(page.getByTestId('templates-tab')).toBeVisible();
 
     await page.close();
   });
@@ -49,15 +48,14 @@ test.describe('FlowCraft - Template Browser', () => {
   test('should open template browser modal', async () => {
     const page = await ExtensionUtils.openOptions(context, extensionId);
 
-    // Click templates button
-    const templateButton = page.locator('button').filter({ hasText: /Template/ }).first();
-    await templateButton.click();
+    // Click templates tab
+    await page.getByTestId('templates-tab').click();
 
     // Verify modal appears (use first() to avoid strict mode)
     await expect(page.locator('text=Rule Templates').first()).toBeVisible();
 
     // Verify search box
-    await expect(page.locator('input[placeholder*="Search"]')).toBeVisible();
+    await expect(page.getByTestId('template-search-input')).toBeVisible();
 
     // Verify at least one category is shown
     const categories = page.locator('button, text').filter({ hasText: /Development|Privacy|Performance|Testing|Security|CORS|API/ });
@@ -70,15 +68,14 @@ test.describe('FlowCraft - Template Browser', () => {
   test('should display template cards', async () => {
     const page = await ExtensionUtils.openOptions(context, extensionId);
 
-    const templateButton = page.locator('button').filter({ hasText: /Template/ }).first();
-    await templateButton.click();
+    await page.getByTestId('templates-tab').click();
 
     // Wait for templates to load
     await page.waitForTimeout(500);
 
-    // Verify template cards are visible (look for known template names)
-    const templateNames = page.locator('text=Disable Browser Cache, text=CORS, text=Block');
-    await expect(templateNames.first()).toBeVisible({ timeout: 2000 });
+    // Verify template cards are visible by checking for any template card test-id
+    const templateCards = page.locator('[data-testid^="template-card-"]');
+    await expect(templateCards.first()).toBeVisible({ timeout: 2000 });
 
     await page.close();
   });
@@ -86,8 +83,7 @@ test.describe('FlowCraft - Template Browser', () => {
   test('should filter templates by category', async () => {
     const page = await ExtensionUtils.openOptions(context, extensionId);
 
-    const templateButton = page.locator('button').filter({ hasText: /Template/ }).first();
-    await templateButton.click();
+    await page.getByTestId('templates-tab').click();
 
     await page.waitForTimeout(500);
 
@@ -107,13 +103,13 @@ test.describe('FlowCraft - Template Browser', () => {
   test('should search templates by text', async () => {
     const page = await ExtensionUtils.openOptions(context, extensionId);
 
-    const templateButton = page.locator('button').filter({ hasText: /Template/ }).first();
-    await templateButton.click();
+    // Use templates tab
+    await page.getByTestId('templates-tab').click();
 
     await page.waitForTimeout(500);
 
     // Type in search box
-    const searchInput = page.locator('input[placeholder*="Search"]');
+    const searchInput = page.getByTestId('template-search-input');
     await searchInput.fill('cache');
     await page.waitForTimeout(300);
 
@@ -127,22 +123,20 @@ test.describe('FlowCraft - Template Browser', () => {
   test('should show template details when clicked', async () => {
     const page = await ExtensionUtils.openOptions(context, extensionId);
 
-    const templateButton = page.locator('button').filter({ hasText: /Template/ }).first();
-    await templateButton.click();
+    await page.getByTestId('templates-tab').click();
 
     await page.waitForTimeout(500);
 
-    // Click on first visible template
-    const firstTemplate = page.locator('h4, div').filter({ hasText: /Disable|CORS|Block/ }).first();
+    // Click on first visible template card
+    const firstTemplateCard = page.locator('[data-testid^="template-card-"]').first();
+    await firstTemplateCard.click();
+    await page.waitForTimeout(300);
 
-    if (await firstTemplate.isVisible()) {
-      await firstTemplate.click();
-      await page.waitForTimeout(300);
-
-      // Verify detail panel appears with description or examples
-      const detailContent = page.locator('text=Description, text=Examples, text=Use');
-      await expect(detailContent.first()).toBeVisible({ timeout: 2000 });
-    }
+    // Verify template card is now highlighted/selected (has ring-2 class)
+    const isSelected = await firstTemplateCard.evaluate((el) =>
+      el.className.includes('ring-2')
+    );
+    expect(isSelected).toBe(true);
 
     await page.close();
   });
@@ -150,13 +144,13 @@ test.describe('FlowCraft - Template Browser', () => {
   test('should create rule from template', async () => {
     const page = await ExtensionUtils.openOptions(context, extensionId);
 
-    const templateButton = page.locator('button').filter({ hasText: /Template/ }).first();
-    await templateButton.click();
+    // Use templates tab
+    await page.getByTestId('templates-tab').click();
 
     await page.waitForTimeout(500);
 
     // Search for a specific template
-    const searchInput = page.locator('input[placeholder*="Search"]');
+    const searchInput = page.getByTestId('template-search-input');
     await searchInput.fill('CORS');
     await page.waitForTimeout(300);
 
@@ -191,13 +185,13 @@ test.describe('FlowCraft - Template Browser', () => {
   test('should allow customizing template before saving', async () => {
     const page = await ExtensionUtils.openOptions(context, extensionId);
 
-    const templateButton = page.locator('button').filter({ hasText: /Template/ }).first();
-    await templateButton.click();
+    // Use templates tab
+    await page.getByTestId('templates-tab').click();
 
     await page.waitForTimeout(500);
 
     // Find any template and use it
-    const searchInput = page.locator('input[placeholder*="Search"]');
+    const searchInput = page.getByTestId('template-search-input');
     await searchInput.fill('disable');
     await page.waitForTimeout(300);
 
@@ -237,8 +231,8 @@ test.describe('FlowCraft - Template Browser', () => {
   test('should show template categories', async () => {
     const page = await ExtensionUtils.openOptions(context, extensionId);
 
-    const templateButton = page.locator('button').filter({ hasText: /Template/ }).first();
-    await templateButton.click();
+    // Use templates tab
+    await page.getByTestId('templates-tab').click();
 
     await page.waitForTimeout(500);
 
@@ -270,13 +264,13 @@ test.describe('FlowCraft - Template Browser', () => {
   test('should reset search and filters', async () => {
     const page = await ExtensionUtils.openOptions(context, extensionId);
 
-    const templateButton = page.locator('button').filter({ hasText: /Template/ }).first();
-    await templateButton.click();
+    // Use templates tab
+    await page.getByTestId('templates-tab').click();
 
     await page.waitForTimeout(500);
 
     // Apply search filter
-    const searchInput = page.locator('input[placeholder*="Search"]');
+    const searchInput = page.getByTestId('template-search-input');
     await searchInput.fill('specific-search-term-xyz');
     await page.waitForTimeout(300);
 
@@ -295,8 +289,8 @@ test.describe('FlowCraft - Template Browser', () => {
   test('should close template browser modal', async () => {
     const page = await ExtensionUtils.openOptions(context, extensionId);
 
-    const templateButton = page.locator('button').filter({ hasText: /Template/ }).first();
-    await templateButton.click();
+    // Use templates tab
+    await page.getByTestId('templates-tab').click();
 
     await page.waitForTimeout(500);
 

@@ -1,0 +1,47 @@
+{
+  "version": "1.0.0",
+  "exportDate": 1766701055257,
+  "exportFormat": 1,
+  "data": {
+    "rules": [
+      {
+        "id": "import-test-1",
+        "name": "Imported Rule 1",
+        "description": "First imported rule",
+        "enabled": true,
+        "priority": 1,
+        "matcher": {
+          "type": "wildcard",
+          "pattern": "https://import.test.com/*"
+        },
+        "action": {
+          "type": "url_redirect",
+          "redirectUrl": "https://redirect.test.com"
+        },
+        "createdAt": 1766701055258,
+        "updatedAt": 1766701055258
+      },
+      {
+        "id": "import-test-2",
+        "name": "Imported Rule 2",
+        "description": "Second imported rule",
+        "enabled": false,
+        "priority": 2,
+        "matcher": {
+          "type": "exact",
+          "pattern": "https://import2.test.com/api"
+        },
+        "action": {
+          "type": "request_block"
+        },
+        "createdAt": 1766701055258,
+        "updatedAt": 1766701055258
+      }
+    ]
+  },
+  "metadata": {
+    "rulesCount": 2,
+    "groupsCount": 0,
+    "includesSettings": false
+  }
+}

@@ -1,0 +1,184 @@
+{
+  "version": "0.1.0",
+  "exportDate": 1766701057393,
+  "exportFormat": 1,
+  "data": {
+    "rules": [
+      {
+        "action": {
+          "redirectUrl": "https://redirect.test.com",
+          "type": "url_redirect"
+        },
+        "createdAt": 1766700503852,
+        "description": "First imported rule",
+        "enabled": true,
+        "id": "849aa8eb-02fb-452e-83e0-808e86966f34",
+        "matcher": {
+          "pattern": "https://import.test.com/*",
+          "type": "wildcard"
+        },
+        "name": "Imported Rule 1",
+        "priority": 1,
+        "updatedAt": 1766700503852
+      },
+      {
+        "action": {
+          "type": "request_block"
+        },
+        "createdAt": 1766700503853,
+        "description": "Second imported rule",
+        "enabled": false,
+        "id": "b58709ab-0482-4f2e-80ec-39c9f2aa20d7",
+        "matcher": {
+          "pattern": "https://import2.test.com/api",
+          "type": "exact"
+        },
+        "name": "Imported Rule 2",
+        "priority": 2,
+        "updatedAt": 1766700503853
+      },
+      {
+        "action": {
+          "type": "request_block"
+        },
+        "createdAt": 1766700511472,
+        "description": "Testing close button",
+        "enabled": true,
+        "id": "95413a83-1849-4d53-bba4-f1ddedb8b220",
+        "matcher": {
+          "pattern": "https://close.test.com/*",
+          "type": "wildcard"
+        },
+        "name": "Close Test Rule",
+        "priority": 1,
+        "updatedAt": 1766700511472
+      },
+      {
+        "action": {
+          "redirectUrl": "https://redirect.test.com",
+          "type": "url_redirect"
+        },
+        "createdAt": 1766700607474,
+        "description": "First imported rule",
+        "enabled": true,
+        "id": "14dac1b3-4b6c-4e2a-8643-4ee6cb79bc7a",
+        "matcher": {
+          "pattern": "https://import.test.com/*",
+          "type": "wildcard"
+        },
+        "name": "Imported Rule 1",
+        "priority": 1,
+        "updatedAt": 1766700607474
+      },
+      {
+        "action": {
+          "type": "request_block"
+        },
+        "createdAt": 1766700607475,
+        "description": "Second imported rule",
+        "enabled": false,
+        "id": "f7ce0051-0aee-499c-a2e6-a6e6da9d7729",
+        "matcher": {
+          "pattern": "https://import2.test.com/api",
+          "type": "exact"
+        },
+        "name": "Imported Rule 2",
+        "priority": 2,
+        "updatedAt": 1766700607475
+      },
+      {
+        "action": {
+          "type": "request_block"
+        },
+        "createdAt": 1766700609042,
+        "description": "Testing close button",
+        "enabled": true,
+        "id": "f9ae364d-71f2-4021-a004-322f0721c65f",
+        "matcher": {
+          "pattern": "https://close.test.com/*",
+          "type": "wildcard"
+        },
+        "name": "Close Test Rule",
+        "priority": 1,
+        "updatedAt": 1766700609042
+      },
+      {
+        "action": {
+          "type": "request_block"
+        },
+        "createdAt": 1766701053740,
+        "enabled": true,
+        "id": "1766701053740-ndj1buo13",
+        "matcher": {
+          "pattern": "https://export.test.com/*",
+          "type": "exact"
+        },
+        "name": "Test Export Rule",
+        "priority": 100,
+        "updatedAt": 1766701053740
+      },
+      {
+        "action": {
+          "redirectUrl": "https://redirect.test.com",
+          "type": "url_redirect"
+        },
+        "createdAt": 1766701055274,
+        "description": "First imported rule",
+        "enabled": true,
+        "id": "bfc9185f-d220-4476-a4c3-d22c926f42a9",
+        "matcher": {
+          "pattern": "https://import.test.com/*",
+          "type": "wildcard"
+        },
+        "name": "Imported Rule 1",
+        "priority": 1,
+        "updatedAt": 1766701055274
+      },
+      {
+        "action": {
+          "type": "request_block"
+        },
+        "createdAt": 1766701055275,
+        "description": "Second imported rule",
+        "enabled": false,
+        "id": "53bec260-dccb-4e1c-a4fb-14e1666e906e",
+        "matcher": {
+          "pattern": "https://import2.test.com/api",
+          "type": "exact"
+        },
+        "name": "Imported Rule 2",
+        "priority": 2,
+        "updatedAt": 1766701055275
+      }
+    ],
+    "groups": [],
+    "settings": {
+      "autoEnableNewRules": true,
+      "enableNotifications": true,
+      "enableRequestHistory": false,
+      "enabled": true,
+      "logger": {
+        "captureHeaders": true,
+        "captureRequestBody": false,
+        "captureResponseBody": true,
+        "enabled": false,
+        "maxBodySize": 102400,
+        "maxLogSize": 500,
+        "preserveOnDisable": false,
+        "urlFilters": [
+          "*://*/favicon.ico",
+          "*://*.google-analytics.com/*",
+          "*://*.googletagmanager.com/*",
+          "*://*/ping"
+        ]
+      },
+      "maxHistorySize": 100,
+      "theme": "system"
+    }
+  },
+  "metadata": {
+    "rulesCount": 9,
+    "groupsCount": 0,
+    "includesSettings": true
+  }
+}

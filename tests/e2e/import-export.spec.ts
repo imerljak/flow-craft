@@ -33,21 +33,27 @@ test.describe('Import/Export Rules', () => {
   test.afterAll(async () => {
     await context.close();
   });
+
+  test.beforeEach(async () => {
+    const page = await ExtensionUtils.openOptions(context, extensionId);
+    await ExtensionUtils.clearStorage(page);
+    await page.close();
+  });
+
   test('should export rules successfully', async () => {
     const page = await context.newPage();
     await page.goto(`chrome-extension://${extensionId}/options.html`);
 
     // Create a test rule first
     await page.getByTestId('new-rule-btn').click();
-    await page.locator('input[name="name"]').fill('Test Export Rule');
-    await page.locator('textarea[name="description"]').fill('Rule for export testing');
-    await page.locator('input[name="pattern"]').fill('https://export.test.com/*');
+    await page.fill('input[placeholder*="CORS"]', 'Test Export Rule');
+    await page.fill('input[placeholder*="api.example.com"]', 'https://export.test.com/*');
+    await page.selectOption('select#rule-type', { value: 'request_block' });
+    await page.locator('button:has-text("Save Rule")').click();
+    await expect(page.getByTestId('rule-editor-drawer')).not.toBeVisible({ timeout: 3000 });
 
-    // Click Save
-    await page.getByRole('button', { name: 'Save Rule' }).click();
-
-    // Wait for drawer to close and rule to appear
-    await expect(page.getByText('Test Export Rule')).toBeVisible();
+    // Wait for rule to appear in table
+    await expect(page.locator('text=Test Export Rule')).toBeVisible();
 
     // Navigate to Settings
     await page.getByRole('button', { name: /Settings/i }).click();
@@ -155,10 +161,10 @@ test.describe('Import/Export Rules', () => {
     await page.getByRole('button', { name: /HTTP Rules/i }).click();
 
     // Verify imported rules appear (note: IDs will be regenerated)
-    await expect(page.getByText('Imported Rule 1')).toBeVisible();
-    await expect(page.getByText('Imported Rule 2')).toBeVisible();
-    await expect(page.getByText('First imported rule')).toBeVisible();
-    await expect(page.getByText('Second imported rule')).toBeVisible();
+    await expect(page.getByText('Imported Rule 1').first()).toBeVisible();
+    await expect(page.getByText('Imported Rule 2').first()).toBeVisible();
+    await expect(page.getByText('First imported rule').first()).toBeVisible();
+    await expect(page.getByText('Second imported rule').first()).toBeVisible();
 
     // Cleanup
     fs.unlinkSync(tempPath);
@@ -169,10 +175,12 @@ test.describe('Import/Export Rules', () => {
     await page.goto(`chrome-extension://${extensionId}/options.html`);
 
     // Navigate to Settings
-    await page.getByRole('button', { name: /Settings/i }).click();
+    await page.getByTestId('settings-tab').click();
+    await page.waitForTimeout(300);
 
     // Enable logger for testing
-    await page.getByText('Enable Logging').click();
+    await page.getByTestId('logger-enabled-toggle').click();
+    await page.waitForTimeout(500);
 
     // Setup download promise
     const downloadPromise = page.waitForEvent('download');

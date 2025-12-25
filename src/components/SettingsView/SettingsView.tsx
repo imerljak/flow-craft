@@ -314,6 +314,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ className = '' }) =>
                 </p>
               </div>
               <button
+                data-testid="logger-enabled-toggle"
                 onClick={() => handleLoggerToggle(!settings.logger.enabled)}
                 className={`w-12 h-6 rounded-full transition-colors ${
                   settings.logger.enabled
