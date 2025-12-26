@@ -631,4 +631,235 @@ describe('RequestInterceptor', () => {
       });
     });
   });
+
+  describe('Mock Response and Script Injection', () => {
+    it('should return null for MOCK_RESPONSE rule type', () => {
+      const rule: Rule = {
+        id: 'test-mock',
+        name: 'Mock Response Rule',
+        enabled: true,
+        priority: 1,
+        matcher: {
+          type: 'exact',
+          pattern: 'https://api.example.com/data',
+        },
+        action: {
+          type: RuleType.MOCK_RESPONSE,
+          mockResponse: {
+            statusCode: 200,
+            headers: [],
+            body: '{"data": "mocked"}',
+          },
+        },
+        createdAt: Date.now(),
+        updatedAt: Date.now(),
+      };
+
+      const chromeRule = RequestInterceptor.convertToDeclarativeNetRequestRule(rule, 1);
+      expect(chromeRule).toBeNull();
+    });
+
+    it('should return null for SCRIPT_INJECTION rule type', () => {
+      const rule: Rule = {
+        id: 'test-script',
+        name: 'Script Injection Rule',
+        enabled: true,
+        priority: 1,
+        matcher: {
+          type: 'exact',
+          pattern: 'https://example.com',
+        },
+        action: {
+          type: RuleType.SCRIPT_INJECTION,
+          script: 'console.log("injected");',
+          runAt: 'document_end',
+        },
+        createdAt: Date.now(),
+        updatedAt: Date.now(),
+      };
+
+      const chromeRule = RequestInterceptor.convertToDeclarativeNetRequestRule(rule, 1);
+      expect(chromeRule).toBeNull();
+    });
+  });
+
+  describe('Error Handling', () => {
+    it('should throw error when buildHeaderModificationAction receives non-header rule', () => {
+      const rule: Rule = {
+        id: 'test-invalid',
+        name: 'Invalid Rule',
+        enabled: true,
+        priority: 1,
+        matcher: {
+          type: 'exact',
+          pattern: 'https://example.com',
+        },
+        action: {
+          type: RuleType.REQUEST_BLOCK,
+        },
+        createdAt: Date.now(),
+        updatedAt: Date.now(),
+      };
+
+      // Access private method through the class
+      expect(() => {
+        // @ts-expect-error Testing private method
+        RequestInterceptor.buildHeaderModificationAction(rule);
+      }).toThrow('Invalid rule type for header modification');
+    });
+
+    it('should throw error when buildQueryParamTransform receives non-query-param rule', () => {
+      const rule: Rule = {
+        id: 'test-invalid',
+        name: 'Invalid Rule',
+        enabled: true,
+        priority: 1,
+        matcher: {
+          type: 'exact',
+          pattern: 'https://example.com',
+        },
+        action: {
+          type: RuleType.REQUEST_BLOCK,
+        },
+        createdAt: Date.now(),
+        updatedAt: Date.now(),
+      };
+
+      expect(() => {
+        // @ts-expect-error Testing private method
+        RequestInterceptor.buildQueryParamTransform(rule);
+      }).toThrow('Invalid rule type for query parameter modification');
+    });
+
+    it('should handle errors when updating dynamic rules', async () => {
+      const rules: Rule[] = [
+        {
+          id: 'rule-1',
+          name: 'Test Rule',
+          enabled: true,
+          priority: 1,
+          matcher: {
+            type: 'exact',
+            pattern: 'https://example.com',
+          },
+          action: {
+            type: RuleType.REQUEST_BLOCK,
+          },
+          createdAt: Date.now(),
+          updatedAt: Date.now(),
+        },
+      ];
+
+      // Mock getDynamicRules to succeed
+      (Browser.declarativeNetRequest.getDynamicRules as ReturnType<typeof vi.fn>).mockResolvedValue([]);
+
+      // Mock updateDynamicRules to fail
+      (Browser.declarativeNetRequest.updateDynamicRules as ReturnType<typeof vi.fn>).mockRejectedValue(
+        new Error('Failed to update rules')
+      );
+
+      await expect(RequestInterceptor.updateDynamicRules(rules)).rejects.toThrow('Failed to update rules');
+    });
+  });
+
+  describe('getRuleByNumericId', () => {
+    beforeEach(async () => {
+      vi.clearAllMocks();
+      (Browser.declarativeNetRequest.getDynamicRules as ReturnType<typeof vi.fn>).mockResolvedValue([]);
+      (Browser.declarativeNetRequest.updateDynamicRules as ReturnType<typeof vi.fn>).mockResolvedValue(undefined);
+    });
+
+    it('should return rule by numeric ID after updateDynamicRules', async () => {
+      const rules: Rule[] = [
+        {
+          id: 'flowcraft-rule-1',
+          name: 'Test Rule',
+          enabled: true,
+          priority: 1,
+          matcher: {
+            type: 'exact',
+            pattern: 'https://example.com',
+          },
+          action: {
+            type: RuleType.REQUEST_BLOCK,
+          },
+          createdAt: Date.now(),
+          updatedAt: Date.now(),
+        },
+      ];
+
+      await RequestInterceptor.updateDynamicRules(rules);
+
+      const rule = RequestInterceptor.getRuleByNumericId(1);
+      expect(rule).toBeDefined();
+      expect(rule?.id).toBe('flowcraft-rule-1');
+      expect(rule?.name).toBe('Test Rule');
+    });
+
+    it('should return null for non-existent numeric ID', async () => {
+      const rules: Rule[] = [];
+      await RequestInterceptor.updateDynamicRules(rules);
+
+      const rule = RequestInterceptor.getRuleByNumericId(999);
+      expect(rule).toBeNull();
+    });
+
+    it('should return null when flowCraftId exists but rule not found', async () => {
+      const rules: Rule[] = [
+        {
+          id: 'rule-1',
+          name: 'Test Rule',
+          enabled: true,
+          priority: 1,
+          matcher: { type: 'exact', pattern: 'https://example.com' },
+          action: { type: RuleType.REQUEST_BLOCK },
+          createdAt: Date.now(),
+          updatedAt: Date.now(),
+        },
+      ];
+
+      await RequestInterceptor.updateDynamicRules(rules);
+
+      // Manually corrupt the flowCraftRulesMap to simulate missing rule
+      // @ts-expect-error Accessing private property for testing
+      RequestInterceptor.flowCraftRulesMap.delete('rule-1');
+
+      const rule = RequestInterceptor.getRuleByNumericId(1);
+      expect(rule).toBeNull();
+    });
+  });
+
+  describe('clearDynamicRules', () => {
+    beforeEach(() => {
+      vi.clearAllMocks();
+      (Browser.declarativeNetRequest.updateDynamicRules as ReturnType<typeof vi.fn>).mockResolvedValue(undefined);
+    });
+
+    it('should clear all dynamic rules', async () => {
+      // Mock existing rules
+      (Browser.declarativeNetRequest.getDynamicRules as ReturnType<typeof vi.fn>).mockResolvedValue([
+        { id: 1 },
+        { id: 2 },
+        { id: 3 },
+      ]);
+
+      await RequestInterceptor.clearDynamicRules();
+
+      expect(Browser.declarativeNetRequest.updateDynamicRules).toHaveBeenCalledWith({
+        removeRuleIds: [1, 2, 3],
+        addRules: [],
+      });
+    });
+
+    it('should handle clearing when no rules exist', async () => {
+      (Browser.declarativeNetRequest.getDynamicRules as ReturnType<typeof vi.fn>).mockResolvedValue([]);
+
+      await RequestInterceptor.clearDynamicRules();
+
+      expect(Browser.declarativeNetRequest.updateDynamicRules).toHaveBeenCalledWith({
+        removeRuleIds: [],
+        addRules: [],
+      });
+    });
+  });
 });
