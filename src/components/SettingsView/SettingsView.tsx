@@ -205,7 +205,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ className = '' }) =>
       <div className="max-w-3xl">
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-2xl font-bold text-neutral-900 dark:text-white">Settings</h2>
-          <Button variant="primary" onClick={handleSave} disabled={saveStatus === 'saving'}>
+          <Button data-testid="save-settings-btn" variant="primary" onClick={handleSave} disabled={saveStatus === 'saving'}>
             {saveStatus === 'saving' && 'Saving...'}
             {saveStatus === 'saved' && '✓ Saved'}
             {saveStatus === 'error' && '✗ Error'}
@@ -227,6 +227,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ className = '' }) =>
                 </p>
               </div>
               <button
+                data-testid="enable-extension-toggle"
                 onClick={() => setSettings({ ...settings, enabled: !settings.enabled })}
                 className={`w-12 h-6 rounded-full transition-colors ${
                   settings.enabled
@@ -252,6 +253,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ className = '' }) =>
                 </p>
               </div>
               <button
+                data-testid="enable-notifications-toggle"
                 onClick={() =>
                   setSettings({ ...settings, enableNotifications: !settings.enableNotifications })
                 }
@@ -340,6 +342,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ className = '' }) =>
                     Maximum number of requests to keep (older requests are automatically removed)
                   </p>
                   <input
+                    data-testid="max-log-size-input"
                     type="number"
                     min="50"
                     max="2000"

@@ -200,13 +200,13 @@ export const NetworkView: React.FC<NetworkViewProps> = ({ className = '' }) => {
             </p>
           </div>
           <div className="flex gap-2">
-            <Button variant="ghost" size="sm" onClick={handleExportJSON}>
+            <Button data-testid="export-json-btn" variant="ghost" size="sm" onClick={handleExportJSON}>
               Export JSON
             </Button>
-            <Button variant="ghost" size="sm" onClick={handleExportCSV}>
+            <Button data-testid="export-csv-btn" variant="ghost" size="sm" onClick={handleExportCSV}>
               Export CSV
             </Button>
-            <Button variant="danger" size="sm" onClick={handleClearLogs}>
+            <Button data-testid="clear-logs-btn" variant="danger" size="sm" onClick={handleClearLogs}>
               Clear Logs
             </Button>
           </div>
@@ -216,6 +216,7 @@ export const NetworkView: React.FC<NetworkViewProps> = ({ className = '' }) => {
         <div className="grid grid-cols-3 gap-4">
           <div>
             <input
+              data-testid="filter-url-input"
               type="text"
               placeholder="Filter by URL..."
               value={filterUrl}
@@ -225,6 +226,7 @@ export const NetworkView: React.FC<NetworkViewProps> = ({ className = '' }) => {
           </div>
           <div>
             <select
+              data-testid="filter-action-select"
               value={filterAction}
               onChange={(e) => setFilterAction(e.target.value as LogActionType | '')}
               className="w-full px-3 py-2 text-sm border border-neutral-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500"
@@ -240,6 +242,7 @@ export const NetworkView: React.FC<NetworkViewProps> = ({ className = '' }) => {
           </div>
           <div>
             <select
+              data-testid="filter-method-select"
               value={filterMethod}
               onChange={(e) => setFilterMethod(e.target.value as HttpMethod | '')}
               className="w-full px-3 py-2 text-sm border border-neutral-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500"
