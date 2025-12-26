@@ -2,7 +2,6 @@
  * Tests for ConflictPanel Component
  */
 
-import React from 'react';
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import { ConflictPanel } from '../ConflictPanel';
@@ -47,7 +46,7 @@ describe('ConflictPanel', () => {
         severity: ConflictSeverity.ERROR,
         ruleIds: ['rule-1', 'rule-2'],
         message: 'Cannot block and redirect the same request',
-        description: 'These rules have conflicting actions',
+        suggestion: 'These rules have conflicting actions',
       },
     ];
 
