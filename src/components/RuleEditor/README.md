@@ -78,9 +78,15 @@ Sub-component for managing header modifications.
 
 ## Testing
 
-Note: React component tests require Jest configuration improvements for proper React transformation. This is tracked as a follow-up task.
+The RuleEditor component has comprehensive unit test coverage:
 
-Core functionality is tested through integration tests and manual QA.
+- **RuleEditor.test.tsx**: 13 tests covering rendering, validation, form interaction, and advanced settings
+- **HeaderEditor.test.tsx**: 17 tests for header manipulation
+- **QueryParamEditor.test.tsx**: 13 tests for query parameter modification
+- **ScriptInjectionEditor.test.tsx**: 11 tests for script injection
+- **MockResponseEditor.test.tsx**: 18 tests for response mocking
+
+All tests use Vitest and React Testing Library with proper async handling and test-ids.
 
 ## Future Enhancements
 
