@@ -2,7 +2,6 @@
  * Comprehensive tests for SettingsView Component
  */
 
-import React from 'react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { SettingsView } from '../SettingsView';
@@ -32,8 +31,8 @@ vi.mock('@storage/index', () => ({
 }));
 
 // Mock DOM methods
-global.URL.createObjectURL = vi.fn(() => 'blob:mock-url');
-global.URL.revokeObjectURL = vi.fn();
+globalThis.URL.createObjectURL = vi.fn(() => 'blob:mock-url');
+globalThis.URL.revokeObjectURL = vi.fn();
 HTMLAnchorElement.prototype.click = vi.fn();
 const mockPrompt = vi.fn();
 vi.stubGlobal('prompt', mockPrompt);
@@ -314,7 +313,7 @@ describe('SettingsView', () => {
       fireEvent.click(exportBtn);
 
       await waitFor(() => {
-        expect(global.URL.createObjectURL).toHaveBeenCalled();
+        expect(globalThis.URL.createObjectURL).toHaveBeenCalled();
         expect(HTMLAnchorElement.prototype.click).toHaveBeenCalled();
       });
     });

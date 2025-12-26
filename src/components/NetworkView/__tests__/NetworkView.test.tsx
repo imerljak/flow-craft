@@ -20,8 +20,8 @@ const mockConfirm = vi.fn();
 vi.stubGlobal('confirm', mockConfirm);
 
 // Mock URL.createObjectURL and revokeObjectURL
-global.URL.createObjectURL = vi.fn(() => 'blob:mock-url');
-global.URL.revokeObjectURL = vi.fn();
+globalThis.URL.createObjectURL = vi.fn(() => 'blob:mock-url');
+globalThis.URL.revokeObjectURL = vi.fn();
 
 // Mock HTMLAnchorElement.click
 HTMLAnchorElement.prototype.click = vi.fn();
@@ -33,8 +33,11 @@ const mockLogs: HttpLog[] = [
     method: 'GET' as HttpMethod,
     timestamp: Date.now(),
     action: 'original' as LogActionType,
-    status: 200,
+    responseStatus: 200,
     duration: 150,
+    startTime: 0,
+    isMocked: false,
+    isBlocked: false
   },
   {
     id: 'log-2',
@@ -42,9 +45,12 @@ const mockLogs: HttpLog[] = [
     method: 'POST' as HttpMethod,
     timestamp: Date.now(),
     action: 'mocked' as LogActionType,
-    status: 201,
+    responseStatus: 201,
     duration: 50,
-    ruleId: 'rule-1',
+    matchedRuleId: 'rule-1',
+    startTime: 0,
+    isMocked: false,
+    isBlocked: false
   },
   {
     id: 'log-3',
@@ -52,7 +58,10 @@ const mockLogs: HttpLog[] = [
     method: 'DELETE' as HttpMethod,
     timestamp: Date.now(),
     action: 'blocked' as LogActionType,
-    ruleId: 'rule-2',
+    matchedRuleId: 'rule-2',
+    startTime: 0,
+    isMocked: false,
+    isBlocked: false
   },
 ];
 
@@ -338,7 +347,7 @@ describe('NetworkView', () => {
       });
 
       // Should create blob and trigger download
-      expect(global.URL.createObjectURL).toHaveBeenCalled();
+      expect(globalThis.URL.createObjectURL).toHaveBeenCalled();
       expect(HTMLAnchorElement.prototype.click).toHaveBeenCalled();
     });
 

@@ -647,7 +647,7 @@ describe('RequestInterceptor', () => {
           type: RuleType.MOCK_RESPONSE,
           mockResponse: {
             statusCode: 200,
-            headers: [],
+            headers: {},
             body: '{"data": "mocked"}',
           },
         },
@@ -671,8 +671,10 @@ describe('RequestInterceptor', () => {
         },
         action: {
           type: RuleType.SCRIPT_INJECTION,
-          script: 'console.log("injected");',
-          runAt: 'document_end',
+          script: {
+            code: 'console.log("injected");',
+            runAt: 'document_end',
+          },
         },
         createdAt: Date.now(),
         updatedAt: Date.now(),
