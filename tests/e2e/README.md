@@ -15,53 +15,62 @@ The E2E test suite validates critical user flows by testing the extension in a r
 ## Test Suites
 
 ### 1. Basic Popup Tests (`popup-basic.spec.ts`)
-
-Tests fundamental popup functionality:
-
-- ✅ Popup opens successfully
-- ✅ Correct dimensions (600x500px)
-- ✅ Empty state displays correctly
-- ✅ "New Rule" button works
-- ✅ Modal opens and closes
-- ✅ Validation errors display
+- Popup functionality
+- UI rendering
+- Navigation
 
 ### 2. Rule Management Tests (`rule-management.spec.ts`)
-
-Tests CRUD operations on rules:
-
-- ✅ Create header modification rules
-- ✅ Create URL redirection rules
-- ✅ Create block request rules
-- ✅ Toggle rules on/off
-- ✅ Edit existing rules
-- ✅ Delete rules with confirmation
-- ✅ Create multiple rules
+- CRUD operations
+- Rule editing
+- Rule deletion with confirmation
 
 ### 3. Validation Tests (`validation.spec.ts`)
-
-Tests form validation logic:
-
-- ✅ Required field validation (name, pattern)
-- ✅ URL format validation for exact match
-- ✅ Wildcard pattern support
-- ✅ Regex pattern validation
-- ✅ Redirect URL validation
-- ✅ Header name validation
-- ✅ Error clearing on correction
-- ✅ Priority validation
+- Form validation
+- Pattern matching validation
+- Required fields
 
 ### 4. Persistence Tests (`persistence.spec.ts`)
+- Data storage
+- Rule persistence across sessions
 
-Tests data storage and persistence:
+### 5. Settings Tests (`settings.spec.ts`)
+- Settings management
+- Logger configuration
+- General settings
 
-- ✅ Rules persist after closing/reopening popup
-- ✅ Enabled/disabled state persists
-- ✅ Multiple rules persist correctly
-- ✅ Header modifications persist
-- ✅ Redirect URLs persist
-- ✅ Data integrity across operations
-- ✅ Special characters handling
-- ✅ Direct storage verification
+### 6. Template Browser Tests (`template-browser.spec.ts`)
+- Template selection
+- Template categories
+- Template customization
+
+### 7. Import/Export Tests (`import-export.spec.ts`)
+- Rules export
+- Rules import
+- Settings export/import
+
+### 8. Network Logger Tests (`network-logger.spec.ts`)
+- Request logging
+- Log filtering
+- Log export
+
+### 9. Conflict Detection Tests (`conflict-detection.spec.ts`)
+- Rule conflict identification
+- Conflict resolution
+- Priority handling
+
+### 10. URL Matching Tests (`url-matching.spec.ts`)
+- Exact URL matching
+- Wildcard patterns
+- Regex patterns
+
+### 11. New Features Tests (`new-features.spec.ts`)
+- Mock response functionality
+- Script injection
+- Query parameter modification
+
+### 12. Mock Local File Tests (`mock-local-file.spec.ts`)
+- Local file mocking
+- File-based responses
 
 ## Prerequisites
 

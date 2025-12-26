@@ -151,9 +151,9 @@ src/
 
 FlowCraft follows Test-Driven Development (TDD) principles:
 
-- **Unit Tests**: Vitest + React Testing Library (215 tests) ✅
-- **E2E Tests**: Playwright (51 tests) ✅
-- **Coverage**: Minimum 75% code coverage required (currently >83%)
+- **Unit Tests**: Vitest + React Testing Library (392 tests) ✅
+- **E2E Tests**: Playwright (32 tests) ✅
+- **Coverage**: All thresholds exceeded (Lines: 86.81%, Statements: 85.21%, Functions: 80.56%, Branches: 74.31%)
 
 ```bash
 # Run all tests
@@ -192,15 +192,17 @@ Contributions are welcome! Please read our [Contributing Guide](CONTRIBUTING.md)
 - ✅ Script injection
 - ✅ Query parameter modification
 - ✅ Request blocking
+- ✅ Request/response viewer/logger
+- ✅ Rule templates library
+- ✅ Import/export rules UI
+- ✅ Rule conflict detection UI
+- ✅ Comprehensive test coverage (392 unit tests + 32 E2E tests)
 
 ### Toward 1.0.0 (Stable Release)
-- Request/response viewer/logger
-- Rule templates library
-- Import/export rules UI
-- Rule conflict detection UI
-- Performance optimization
+- Performance optimization for large rule sets
 - Chrome Web Store publication
 - Enhanced documentation and examples
+- Browser extension tutorials
 
 ### Future Enhancements (Post-1.0.0)
 - AI-assisted rule suggestions
@@ -213,10 +215,9 @@ Contributions are welcome! Please read our [Contributing Guide](CONTRIBUTING.md)
 
 - **Language**: TypeScript (strict mode)
 - **Framework**: React 18
-- **Styling**: Tailwind CSS
-- **State Management**: Zustand
-- **Testing**: Jest, React Testing Library, Playwright
-- **Build Tool**: Vite
+- **Styling**: Tailwind CSS v4
+- **Testing**: Vitest, React Testing Library, Playwright
+- **Build Tool**: Vite with vite-plugin-web-extension
 - **Extension**: Chrome Manifest V3
 
 ## 📄 License

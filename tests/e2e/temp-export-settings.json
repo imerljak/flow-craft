@@ -1,0 +1,71 @@
+{
+  "version": "0.1.0",
+  "exportDate": 1766701331799,
+  "exportFormat": 1,
+  "data": {
+    "rules": [
+      {
+        "action": {
+          "redirectUrl": "https://redirect.test.com",
+          "type": "url_redirect"
+        },
+        "createdAt": 1766701325017,
+        "description": "First imported rule",
+        "enabled": true,
+        "id": "9c00d49d-e8f4-402d-adea-cb155bfef848",
+        "matcher": {
+          "pattern": "https://import.test.com/*",
+          "type": "wildcard"
+        },
+        "name": "Imported Rule 1",
+        "priority": 1,
+        "updatedAt": 1766701325017
+      },
+      {
+        "action": {
+          "type": "request_block"
+        },
+        "createdAt": 1766701325017,
+        "description": "Second imported rule",
+        "enabled": false,
+        "id": "11351b37-7a01-4085-9860-c54982547405",
+        "matcher": {
+          "pattern": "https://import2.test.com/api",
+          "type": "exact"
+        },
+        "name": "Imported Rule 2",
+        "priority": 2,
+        "updatedAt": 1766701325017
+      }
+    ],
+    "groups": [],
+    "settings": {
+      "enabled": true,
+      "theme": "system",
+      "enableRequestHistory": false,
+      "maxHistorySize": 100,
+      "enableNotifications": true,
+      "autoEnableNewRules": true,
+      "logger": {
+        "enabled": false,
+        "maxLogSize": 500,
+        "captureHeaders": true,
+        "captureRequestBody": false,
+        "captureResponseBody": true,
+        "maxBodySize": 102400,
+        "preserveOnDisable": false,
+        "urlFilters": [
+          "*://*/favicon.ico",
+          "*://*.google-analytics.com/*",
+          "*://*.googletagmanager.com/*",
+          "*://*/ping"
+        ]
+      }
+    }
+  },
+  "metadata": {
+    "rulesCount": 2,
+    "groupsCount": 0,
+    "includesSettings": true
+  }
+}

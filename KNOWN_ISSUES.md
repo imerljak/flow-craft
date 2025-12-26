@@ -13,10 +13,14 @@ This document tracks known issues, limitations, and workarounds in FlowCraft.
 **Solution:** Migrated to Vitest with jsdom environment
 
 **Current Status:**
-- ✅ All 57 unit tests passing
+- ✅ All 392 unit tests passing
 - ✅ All 32 E2E tests passing
-- ✅ Coverage thresholds met (>75% for lines/statements, >70% for branches)
-- ✅ Component tests now working correctly
+- ✅ All coverage thresholds exceeded:
+  - Lines: 86.81% (threshold: 75%)
+  - Statements: 85.21% (threshold: 75%)
+  - Functions: 80.56% (threshold: 70%)
+  - Branches: 74.31% (threshold: 70%)
+- ✅ Component tests now working correctly with proper mocking
 
 ## Build System
 
@@ -117,4 +121,4 @@ We welcome contributions to fix these issues! See CONTRIBUTING.md for guidelines
 
 ---
 
-**Last Updated:** 2025-12-23
+**Last Updated:** 2025-12-26

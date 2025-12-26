@@ -1,6 +1,6 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useForm, Controller, SubmitHandler } from 'react-hook-form';
-import { Rule, RuleType, UrlMatcherType, HeaderModification, QueryParamModification, ScriptInjection, MockResponse } from '@shared/types';
+import { Rule, RuleType, UrlMatcherType, HeaderModification, QueryParamModification, ScriptInjection, MockResponse, RuleConflict, ConflictSeverity } from '@shared/types';
 import { generateId, isValidUrl, isValidRegex } from '@shared/utils';
 import { DEFAULT_RULE_PRIORITY } from '@shared/constants';
 import { Button } from '../Button';
@@ -9,6 +9,7 @@ import { HeaderEditor } from './HeaderEditor';
 import { QueryParamEditor } from './QueryParamEditor';
 import { ScriptInjectionEditor } from './ScriptInjectionEditor';
 import { MockResponseEditor } from './MockResponseEditor';
+import browser from 'webextension-polyfill';
 
 export interface RuleEditorProps {
   rule?: Rule;
@@ -34,6 +35,8 @@ interface RuleFormData {
  * RuleEditor component for creating and editing rules
  */
 export const RuleEditor: React.FC<RuleEditorProps> = ({ rule, onSave, onCancel }) => {
+  const [conflicts, setConflicts] = useState<RuleConflict[]>([]);
+
   const {
     register,
     control,
@@ -60,6 +63,51 @@ export const RuleEditor: React.FC<RuleEditorProps> = ({ rule, onSave, onCancel }
   // eslint-disable-next-line react-hooks/incompatible-library
   const watchedPatternType = watch('patternType');
   const watchedRuleType = watch('ruleType');
+  const watchedPattern = watch('pattern');
+  const watchedPriority = watch('priority');
+
+  // Check for conflicts when pattern or priority changes
+  useEffect(() => {
+    const checkConflicts = async () => {
+      if (!watchedPattern) return;
+
+      // Build a temporary rule to check conflicts
+      const tempRule: Rule = {
+        id: rule?.id || 'temp-id',
+        name: watch('name') || 'Temporary Rule',
+        description: watch('description') || '',
+        enabled: true,
+        priority: typeof watchedPriority === 'string' ? parseInt(watchedPriority) : watchedPriority,
+        matcher: {
+          type: watchedPatternType,
+          pattern: watchedPattern,
+        },
+        action: { type: watchedRuleType } as Rule['action'],
+        createdAt: Date.now(),
+        updatedAt: Date.now(),
+      };
+
+      try {
+        const response = (await browser.runtime.sendMessage({
+          type: 'DETECT_RULE_CONFLICTS',
+          rule: tempRule,
+        })) as { success: boolean; conflicts?: RuleConflict[] };
+
+        if (response.success && response.conflicts) {
+          setConflicts(response.conflicts);
+        }
+      } catch (error) {
+        console.error('Failed to check conflicts:', error);
+      }
+    };
+
+    // Debounce the conflict check
+    const timer = setTimeout(() => {
+      checkConflicts();
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, [watchedPattern, watchedPriority, watchedPatternType, watchedRuleType, rule?.id, watch]);
 
   const onSubmit: SubmitHandler<RuleFormData> = (data) => {
     // Build rule action based on type
@@ -128,6 +176,56 @@ export const RuleEditor: React.FC<RuleEditorProps> = ({ rule, onSave, onCancel }
       onSubmit={handleSubmit(onSubmit)}
       className="space-y-4"
     >
+      {/* Conflict Warning */}
+      {conflicts.length > 0 && (
+        <div className="space-y-2">
+          {conflicts
+            .filter((c) => c.severity === ConflictSeverity.ERROR)
+            .map((conflict) => (
+              <div
+                key={conflict.id}
+                className="bg-error-50 dark:bg-error-900/20 border border-error-300 dark:border-error-700 rounded-lg p-3"
+              >
+                <div className="flex items-start gap-2">
+                  <span className="text-lg">🔴</span>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-error-900 dark:text-error-100">
+                      {conflict.message}
+                    </p>
+                    {conflict.suggestion && (
+                      <p className="text-xs text-error-700 dark:text-error-300 mt-1">
+                        {conflict.suggestion}
+                      </p>
+                    )}
+                  </div>
+                </div>
+              </div>
+            ))}
+          {conflicts
+            .filter((c) => c.severity === ConflictSeverity.WARNING)
+            .map((conflict) => (
+              <div
+                key={conflict.id}
+                className="bg-amber-50 dark:bg-amber-900/20 border border-amber-300 dark:border-amber-700 rounded-lg p-3"
+              >
+                <div className="flex items-start gap-2">
+                  <span className="text-lg">⚠️</span>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-amber-900 dark:text-amber-100">
+                      {conflict.message}
+                    </p>
+                    {conflict.suggestion && (
+                      <p className="text-xs text-amber-700 dark:text-amber-300 mt-1">
+                        {conflict.suggestion}
+                      </p>
+                    )}
+                  </div>
+                </div>
+              </div>
+            ))}
+        </div>
+      )}
+
       {/* Rule Name */}
       <Controller
         name="name"
