@@ -2,8 +2,7 @@
  * Comprehensive tests for NetworkView Component
  */
 
-import React from 'react';
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { NetworkView } from '../NetworkView';
 import { HttpLog, LogActionType, HttpMethod } from '@shared/types';
@@ -499,7 +498,6 @@ describe('NetworkView', () => {
       await screen.findByText(/Network Logs/i);
 
       const clearBtn = screen.getByTestId('clear-logs-btn');
-      const messageCountBefore = mockBrowser.runtime.sendMessage.mock.calls.length;
 
       fireEvent.click(clearBtn);
 

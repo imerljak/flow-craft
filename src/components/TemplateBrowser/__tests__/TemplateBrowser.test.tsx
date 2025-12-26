@@ -2,11 +2,9 @@
  * Tests for TemplateBrowser Component
  */
 
-import React from 'react';
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { TemplateBrowser } from '../TemplateBrowser';
-import { TemplateCategory } from '@shared/types';
 
 describe('TemplateBrowser', () => {
   const mockOnUseTemplate = vi.fn();
@@ -76,8 +74,8 @@ describe('TemplateBrowser', () => {
 
     // Find the Development button from the category buttons list
     const categoryButtons = screen.getAllByText('Development');
-    const developmentButton = categoryButtons[0]; // First one should be the category filter button
-    fireEvent.click(developmentButton);
+    const developmentButton: HTMLElement | undefined = categoryButtons[0]; // First one should be the category filter button
+    fireEvent.click(developmentButton!);
 
     // Button should have active styling - just verify it's clickable and rendered
     expect(developmentButton).toBeInTheDocument();
@@ -104,12 +102,12 @@ describe('TemplateBrowser', () => {
 
     // Find first "Use Template" button
     const useTemplateButtons = screen.getAllByText('Use Template');
-    fireEvent.click(useTemplateButtons[0]);
+    fireEvent.click(useTemplateButtons[0]!);
 
     expect(mockOnUseTemplate).toHaveBeenCalledTimes(1);
-    expect(mockOnUseTemplate.mock.calls[0][0]).toHaveProperty('id');
-    expect(mockOnUseTemplate.mock.calls[0][0]).toHaveProperty('name');
-    expect(mockOnUseTemplate.mock.calls[0][0]).toHaveProperty('rule');
+    expect(mockOnUseTemplate.mock.calls[0]![0]).toHaveProperty('id');
+    expect(mockOnUseTemplate.mock.calls[0]![0]).toHaveProperty('name');
+    expect(mockOnUseTemplate.mock.calls[0]![0]).toHaveProperty('rule');
   });
 
   it('should clear search when changing category', () => {
