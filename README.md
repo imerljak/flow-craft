@@ -23,7 +23,11 @@ FlowCraft is a 100% free, open-source Chrome extension that lets you intercept, 
 
 ## 🚀 Quick Start
 
-### Installation (Development)
+### Installation
+
+**[Install from Chrome Web Store](https://chromewebstore.google.com/detail/glednmmefdmpopkgboefafiojolhadgc)** 🎉
+
+Or build from source for development:
 
 1. Clone the repository:
    ```bash
@@ -232,6 +236,7 @@ Special thanks to all contributors and the open-source community.
 
 ## 📞 Support
 
+- **Chrome Web Store**: [Install FlowCraft](https://chromewebstore.google.com/detail/glednmmefdmpopkgboefafiojolhadgc)
 - **Issues**: [GitHub Issues](https://github.com/imerljak/flow-craft/issues)
 - **Discussions**: [GitHub Discussions](https://github.com/imerljak/flow-craft/discussions)
 
