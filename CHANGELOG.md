@@ -5,6 +5,22 @@ All notable changes to FlowCraft will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.0](https://github.com/imerljak/flow-craft/compare/v0.1.1...v0.2.0) (2025-12-30)
+
+
+### Features
+
+* Implement 1.0.0 roadmap features and performance optimizations ([1a9dc88](https://github.com/imerljak/flow-craft/commit/1a9dc886ddcaa13adeecf030cb68feb53e666da1))
+
+
+### Bug Fixes
+
+* Add conflicts-badge test-id and update conflict detection tests ([b2ee5ce](https://github.com/imerljak/flow-craft/commit/b2ee5ce19aa538b551718f86f6965d1b09e7fdaf))
+* Add test-ids to components and fix E2E test selectors ([62991aa](https://github.com/imerljak/flow-craft/commit/62991aa220ede470a82493555c548e0892bd5ad2))
+* Comprehensive E2E test selector and timing fixes ([b034f69](https://github.com/imerljak/flow-craft/commit/b034f6926ec927e6d8f1c4a0292373706d56e3d1))
+* Correct rule types and selectors in E2E tests ([ea71479](https://github.com/imerljak/flow-craft/commit/ea71479c332b4ad1ac415adf08b5b4e07877263b))
+* Read version dynamically from manifest instead of hardcoding ([51a39b8](https://github.com/imerljak/flow-craft/commit/51a39b848679e071e54c8d14f5bc87337b319bc8))
+
 ## [0.1.1](https://github.com/imerljak/flow-craft/compare/v0.1.0...v0.1.1) (2025-12-24)
 
 
