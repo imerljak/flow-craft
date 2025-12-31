@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "FlowCraft",
-  "version": "0.1.1",
+  "version": "0.2.1",
   "description": "Privacy-first HTTP manipulation toolkit for developers. Mock APIs, modify headers, inject scripts, and control requests locally.",
   "author": "FlowCraft Contributors",
   "homepage_url": "https://github.com/imerljak/flow-craft",
@@ -31,15 +31,23 @@
   "options_page": "options.html",
   "content_scripts": [
     {
-      "matches": ["<all_urls>"],
-      "js": ["src/content/main-world-injector.ts"],
+      "matches": [
+        "<all_urls>"
+      ],
+      "js": [
+        "src/content/main-world-injector.ts"
+      ],
       "run_at": "document_start",
       "all_frames": false,
       "world": "ISOLATED"
     },
     {
-      "matches": ["<all_urls>"],
-      "js": ["src/content/interceptor-bridge.ts"],
+      "matches": [
+        "<all_urls>"
+      ],
+      "js": [
+        "src/content/interceptor-bridge.ts"
+      ],
       "run_at": "document_start",
       "all_frames": false
     }
